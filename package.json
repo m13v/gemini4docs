@@ -1,0 +1,36 @@
+{
+  "dependencies": {
+    "@google/generative-ai": "^0.8.0",
+    "ansi-escapes": "^6.2.1",
+    "dotenv": "^16.4.5",
+    "e2b": "^0.13.2",
+    "gemini4docs": "^0.0.1",
+    "marked": "^12.0.2",
+    "marked-terminal": "^7.0.0",
+    "node-fetch": "^3.3.2"
+  },
+  "type": "module",
+  "name": "gemini4docs",
+  "version": "0.0.2",
+  "description": "Chat with any docs",
+  "main": "gemini4docs.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matthew-heartful/gemini4docs.git"
+  },
+  "bin": {
+    "gemini4docs": "./gemini4docs.js"
+  },
+  "keywords": [
+    "gemini4docs"
+  ],
+  "author": "Matthew Diakonov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matthew-heartful/gemini4docs/issues"
+  },
+  "homepage": "https://github.com/matthew-heartful/gemini4docs#readme"
+}
