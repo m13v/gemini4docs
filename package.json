@@ -11,7 +11,7 @@
   },
   "type": "module",
   "name": "gemini4docs",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Chat with any docs",
   "main": "gemini4docs.js",
   "scripts": {
