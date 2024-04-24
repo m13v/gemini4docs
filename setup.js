@@ -20,10 +20,15 @@ function isInteractive() {
 if (!process.env.SKIP_PROMPT && isInteractive()) {
   inquirer.prompt(questions).then(answers => {
     console.log(`Hello, ${answers.username}!`);
+    // You can add a final message here if needed for interactive mode
+    console.log("Setup completed.");
   });
 } else {
   console.log("Prompt skipped due to non-interactive environment or SKIP_PROMPT being set.");
 }
+
+// If you want a message to always print, move it outside the conditionals
+console.log("Setup script execution finished.");
 
 // import inquirer from 'inquirer';
 // console.log('Setting up gemini4docs...');
