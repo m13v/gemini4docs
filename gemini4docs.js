@@ -6,13 +6,15 @@ import readline from 'readline'; // Import the readline module
 import fetch from 'node-fetch';
 
 dotenv.config();
-
-const Geminiapikey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+const Geminiapikey = 'AIzaSyBGG6YF0vXN8H27ZIN7ibGJvM-ReaVURWY'; //temporary api key
+// const Geminiapikey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
 const genAI = new GoogleGenerativeAI(Geminiapikey);
 
 async function performSearch(query) {
-    const google_search_apiKey = process.env.GOOGLE_SEARCH;
-    const searchEngineId = process.env.SEARCH_ENGINE_ID;
+    const google_search_apiKey = 'AIzaSyAw9uxhcuqjBUu4WyM-9gZBbRIqUCpvczc'; //temporary api key
+    const searchEngineId = '862ace6a23ddc4e37'; //temporary api key
+    // const google_search_apiKey = process.env.GOOGLE_SEARCH;
+    // const searchEngineId = process.env.SEARCH_ENGINE_ID;
     const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&key=${google_search_apiKey}&cx=${searchEngineId}`;
 
     try {
