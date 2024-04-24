@@ -1,1 +1,3 @@
-Welcome to gemini4docs
+Yo, glad you are here! Send me a hi message at i@m13v.com or Discord: matthew.ddy or https://t.me/matthew_ddi
+
+Basic command to get started is: 'gemini4docs'
