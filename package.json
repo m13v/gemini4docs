@@ -14,7 +14,7 @@
   "description": "Chat with any docs",
   "main": "gemini4docs.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
