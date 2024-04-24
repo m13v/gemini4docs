@@ -13,12 +13,16 @@ const questions = [
   }
 ];
 
-if (!process.env.SKIP_PROMPT) {
+function isInteractive() {
+  return process.stdin.isTTY && !process.env.CI;
+}
+
+if (!process.env.SKIP_PROMPT && isInteractive()) {
   inquirer.prompt(questions).then(answers => {
     console.log(`Hello, ${answers.username}!`);
   });
 } else {
-  console.log("Prompt skipped due to SKIP_PROMPT being set.");
+  console.log("Prompt skipped due to non-interactive environment or SKIP_PROMPT being set.");
 }
 
 // import inquirer from 'inquirer';
