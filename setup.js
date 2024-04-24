@@ -1,5 +1,4 @@
-const inquirer = require('inquirer');
-
+import inquirer from 'inquirer';
 console.log('Setting up [Your Package Name]...');
 
 inquirer.prompt([
