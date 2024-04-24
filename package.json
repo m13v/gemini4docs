@@ -4,6 +4,7 @@
     "ansi-escapes": "^6.2.1",
     "dotenv": "^16.4.5",
     "e2b": "^0.13.2",
+    "gemini4docs": "file:gemini4docs-0.0.11.tgz",
     "inquirer": "^9.2.19",
     "marked": "^12.0.2",
     "marked-terminal": "^7.0.0",
@@ -16,7 +17,7 @@
   "main": "gemini4docs.js",
   "scripts": {
     "test": "jest",
-    "postinstall": "echo 'Thank you for installing'"
+    "postinstall": "node setup.js"
   },
   "repository": {
     "type": "git",
