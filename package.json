@@ -4,7 +4,6 @@
     "ansi-escapes": "^6.2.1",
     "dotenv": "^16.4.5",
     "e2b": "^0.13.2",
-    "gemini4docs": "file:../GPT4DOCS",
     "marked": "^12.0.2",
     "marked-terminal": "^7.0.0",
     "node-fetch": "^3.3.2"
@@ -16,7 +15,7 @@
   "main": "gemini4docs.js",
   "scripts": {
     "test": "jest",
-    "postinstall": "echo 'Yo, glad you are here! Send me a hi message at i@m13v.com or Discord: matthew.ddy or https://t.me/matthew_ddi'"
+    "postinstall": "node setup.js"
   },
   "repository": {
     "type": "git",
