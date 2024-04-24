@@ -16,7 +16,7 @@
   "main": "gemini4docs.js",
   "scripts": {
     "test": "jest",
-    "postinstall": "node -e \"console.log('Thank you for installing [Your Package Name]! For more information, visit [URL].')\""
+    "postinstall": "echo 'Thank you for installing'"
   },
   "repository": {
     "type": "git",
