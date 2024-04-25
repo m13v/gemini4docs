@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 // Function to call the indexer.py script
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const indexerPath = join(__dirname, 'indexer.py');  // Assuming indexer.py is in the same directory as your script
-console.log(`Attempting to execute indexer at path: ${indexerPath}`);
+// console.log(`Attempting to execute indexer at path: ${indexerPath}`);
 
 function callIndexer(url) {
     return new Promise((resolve, reject) => {
