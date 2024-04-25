@@ -10,7 +10,7 @@
   },
   "type": "module",
   "name": "gemini4docs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Chat with any docs",
   "main": "gemini4docs.js",
   "scripts": {
