@@ -4,6 +4,57 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import readline from 'readline'; // Import the readline module
 import fetch from 'node-fetch';
+import { exec } from 'child_process';
+
+// Function to call the indexer.py script
+function callIndexer(url) {
+    return new Promise((resolve, reject) => {
+        const process = exec(`python indexer.py "${url}"`);
+
+        let fileName = null;  // Variable to store the file name
+
+        process.stdout.on('data', (data) => {
+            const output = data.toString();
+            // if (process.stdout.clearLine && typeof process.stdout.clearLine === 'function') {
+            //     process.stdout.clearLine();
+            //     process.stdout.cursorTo(0);
+            // } else {
+            //     console.log('\x1Bc'); // This ANSI escape code clears the entire screen and moves the cursor to the top left on most terminals
+            // }
+            console.log(output.trim());  // Log the output directly to console
+
+            // Check if the output contains the file name
+            const match = output.match(/File name: (.*)$/m);
+            if (match) {
+                fileName = match[1].trim();  // Capture the file name
+            }
+        });
+
+        process.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);  // Print each chunk of stderr as it comes in
+        });
+
+        process.on('error', (error) => {
+            console.error(`exec error: ${error}`);
+            reject(error);
+        });
+
+        process.on('close', (code) => {
+            if (code !== 0) {
+                console.error(`Process exited with code ${code}`);
+                reject(new Error(`Process exited with code ${code}`));
+            } else {
+                console.log('Indexer process completed.');
+                if (fileName) {
+                    resolve(fileName);  // Resolve the promise with the captured file name
+                } else {
+                    console.error('No JSON file name returned from indexer.');
+                    reject(new Error('No JSON file name returned from indexer.'));
+                }
+            }
+        });
+    });
+}
 
 dotenv.config();
 const Geminiapikey = 'AIzaSyBGG6YF0vXN8H27ZIN7ibGJvM-ReaVURWY'; //temporary api key
@@ -13,9 +64,10 @@ const genAI = new GoogleGenerativeAI(Geminiapikey);
 async function performSearch(query) {
     const google_search_apiKey = 'AIzaSyAw9uxhcuqjBUu4WyM-9gZBbRIqUCpvczc'; //temporary api key
     const searchEngineId = '862ace6a23ddc4e37'; //temporary api key
+    const modifiedQuery = `${query} documentation`;
     // const google_search_apiKey = process.env.GOOGLE_SEARCH;
     // const searchEngineId = process.env.SEARCH_ENGINE_ID;
-    const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&key=${google_search_apiKey}&cx=${searchEngineId}`;
+    const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(modifiedQuery)}&key=${google_search_apiKey}&cx=${searchEngineId}`;
 
     try {
         const response = await fetch(url);
@@ -66,9 +118,17 @@ function delay(ms) {
 }
 
 async function printTextSymbolBySymbol(text) {
+    const fastDelay = 1;  // Faster delay time in milliseconds
+    const slowDelay = 1; // Slower delay time in milliseconds
+    // const fastDelay = 5;  // Faster delay time in milliseconds
+    // const slowDelay = 10; // Slower delay time in milliseconds
+    const speedThreshold = 150; // Length threshold to switch to faster printing
+
     for (let i = 0; i < text.length; i++) {
         process.stdout.write(text[i]);
-        await delay(10); // Wait for 100 milliseconds
+        // Use a shorter delay if the text length exceeds the threshold
+        const delayTime = text.length > speedThreshold ? fastDelay : slowDelay;
+        await delay(delayTime);
     }
 }
 
@@ -89,30 +149,6 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-function simulateProgressBar(taskName, duration = 10000, steps = 20) {
-    return new Promise((resolve) => { // Return a new promise
-        const progressBarLength = 30; // Length of the progress bar in characters
-        let currentStep = 0;
-        const stepDuration = duration / steps;
-        const progressInterval = setInterval(() => {
-            currentStep++;
-            const progress = Math.floor((currentStep / steps) * progressBarLength);
-            const progressBar = "[" + "=".repeat(progress) + " ".repeat(progressBarLength - progress) + "]";
-            clearConsoleSafely();
-            process.stdout.clearLine(0); // Clear the current console line
-            process.stdout.cursorTo(0); // Move cursor to the beginning of the line
-            process.stdout.write(`${taskName}: ${progressBar} ${Math.floor((progress / progressBarLength) * 100)}%`);
-
-            if (currentStep >= steps) {
-                clearInterval(progressInterval);
-                process.stdout.clearLine(0);
-                process.stdout.cursorTo(0);
-                console.log(`${taskName}: Complete!`);
-                resolve(); // Resolve the promise
-            }
-        }, stepDuration);
-    });
-}
 // New function to ask for documentation type
 const askForDocumentationType = async () => {
     const answer = await askQuestionAnimated('Which documentation do you need? (link or keywords): ');
@@ -123,9 +159,13 @@ const askForDocumentationType = async () => {
         '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
         '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
     if (urlPattern.test(answer)) {
-        await printTextSymbolBySymbol('You entered a valid URL. Processing the link...');
-        await simulateProgressBar('Indexing external documentation', 5000, 20);
-        generateResponseFromLink('todo_links.json'); // Assuming you modify this function to accept a link directly
+        await printTextSymbolBySymbol('Processing the link...');
+        const filename = await callIndexer(answer); // Now waits for completion
+        if (filename) {
+            generateResponseFromLink(filename); // Pass the JSON file path to the function
+        } else {
+            console.error('No JSON file path returned from indexer.');
+        }
     } else {
         await printTextSymbolBySymbol(`Search results for documentation related to: ${answer}`);
         console.log('');
@@ -155,8 +195,12 @@ const askForDocumentationType = async () => {
                     console.log('');
                     await printTextSymbolBySymbol(`Indexing documentation: ${selectedResult.title}`);
                     console.log('');
-                    await simulateProgressBar('Indexing external documentation', 5000, 20);
-                    generateResponseFromLink('todo_links.json', selectedResult.link); // Pass the selected link for indexing
+                    const filename = await callIndexer(selectedResult.link); // Now waits for completion
+                    if (filename) {
+                        generateResponseFromLink(filename); // Pass the JSON file path to the function
+                    } else {
+                        console.error('No JSON file path returned from indexer.');
+                    }
                 } else {
                     await printTextSymbolBySymbol('Invalid selection. Please try again.');
                     askForDocumentationType(); // Invalid selection, retry
@@ -166,21 +210,28 @@ const askForDocumentationType = async () => {
     }
 };
 
-async function generateResponseFromLink(filePath) {
+async function generateResponseFromLink(filename) {
     try {
         await printTextSymbolBySymbol(`Reading docs`);
         console.log('');
-        const fileContent = await fs.readFile(filePath, 'utf8');
+        const fileContent = await fs.readFile(filename, 'utf8');
         await printTextSymbolBySymbol('File content successfully read.');
         console.log('');
-        // const linkData = JSON.parse(fileContent)["https://www.selenium.dev/documentation/test_practices/discouraged/two_factor_authentication/"];
-        const linkData = JSON.parse(fileContent)["https://www.selenium.dev/documentation/_print/"];
-        const content = linkData.content; // Extract the full content of the link
 
-        // Count tokens for the full content
+        const allData = JSON.parse(fileContent);
+        let allContent = [];
+
+        // Iterate over all entries in the JSON file
+        for (const [link, data] of Object.entries(allData.links)) {
+            if (data && data.content) {  // Check if data and content exist
+                let content = data.content; // Extract the full content of the link
+                allContent.push(`Link: ${link}\nContent: ${content}\n`);
+            }
+        }
+
+        let content = allContent.join('\n');
         await countTokensForText(content);
-        await printTextSymbolBySymbol('Starting chat with the model...');
-        console.log('');
+        console.log('Starting chat with the model...');
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
         const chat = model.startChat({
             history: [
@@ -195,7 +246,6 @@ async function generateResponseFromLink(filePath) {
             ],
             apiVersion: 'v1beta'
         });
-
         // Function to ask for the message prompt
         const askForMessagePrompt = async () => {
             const msg = await askQuestionAnimated('Prompt (or type "exit"): ');
@@ -203,7 +253,7 @@ async function generateResponseFromLink(filePath) {
                 await printTextSymbolBySymbol("Exiting...");
                 rl.close();
             } else {
-                await printTextSymbolBySymbol(`Sending message: "${msg}" to the model...`);
+                await printTextSymbolBySymbol(`Sending message to the model...`);
                 console.log('');
                 const startTime = Date.now();
                 let timerId = setInterval(() => {
