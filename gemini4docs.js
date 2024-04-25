@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import readline from 'readline'; // Import the readline module
 import fetch from 'node-fetch';
 import { exec } from 'child_process';
+import path from 'path';
 
 // Function to call the indexer.py script
 function callIndexer(url) {
