@@ -8,8 +8,9 @@ import { exec } from 'child_process';
 
 // Function to call the indexer.py script
 function callIndexer(url) {
+    const indexerPath = path.join(__dirname, 'node_modules', 'gemini4docs', 'indexer.py');
     return new Promise((resolve, reject) => {
-        const process = exec(`python indexer.py "${url}"`);
+        const process = exec(`python "${indexerPath}" "${url}"`);
 
         let fileName = null;  // Variable to store the file name
 
