@@ -5,13 +5,14 @@ import dotenv from 'dotenv';
 import readline from 'readline'; // Import the readline module
 import fetch from 'node-fetch';
 import { exec } from 'child_process';
-import path from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 // Function to call the indexer.py script
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const indexerPath = join(__dirname, 'indexer.py');  // Assuming indexer.py is in the same directory as your script
+console.log(`Attempting to execute indexer at path: ${indexerPath}`);
 
 function callIndexer(url) {
-    const indexerPath = path.join(__dirname, 'node_modules', 'gemini4docs', 'indexer.py');
     return new Promise((resolve, reject) => {
         const process = exec(`python "${indexerPath}" "${url}"`);
 
