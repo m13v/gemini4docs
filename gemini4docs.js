@@ -4,61 +4,18 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import readline from 'readline'; // Import the readline module
 import fetch from 'node-fetch';
-import { exec } from 'child_process';
-import { dirname, join } from 'path';
-import { fileURLToPath } from 'url';
-// Function to call the indexer.py script
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const indexerPath = join(__dirname, 'indexer.py');  // Assuming indexer.py is in the same directory as your script
-// console.log(`Attempting to execute indexer at path: ${indexerPath}`);
+import { main as indexLink } from './indexer.js'; // Adjust the path as necessary
 
-function callIndexer(url) {
-    return new Promise((resolve, reject) => {
-        const process = exec(`python "${indexerPath}" "${url}"`);
 
-        let fileName = null;  // Variable to store the file name
-
-        process.stdout.on('data', (data) => {
-            const output = data.toString();
-            // if (process.stdout.clearLine && typeof process.stdout.clearLine === 'function') {
-            //     process.stdout.clearLine();
-            //     process.stdout.cursorTo(0);
-            // } else {
-            //     console.log('\x1Bc'); // This ANSI escape code clears the entire screen and moves the cursor to the top left on most terminals
-            // }
-            console.log(output.trim());  // Log the output directly to console
-
-            // Check if the output contains the file name
-            const match = output.match(/File name: (.*)$/m);
-            if (match) {
-                fileName = match[1].trim();  // Capture the file name
-            }
-        });
-
-        process.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);  // Print each chunk of stderr as it comes in
-        });
-
-        process.on('error', (error) => {
-            console.error(`exec error: ${error}`);
-            reject(error);
-        });
-
-        process.on('close', (code) => {
-            if (code !== 0) {
-                console.error(`Process exited with code ${code}`);
-                reject(new Error(`Process exited with code ${code}`));
-            } else {
-                console.log('Indexer process completed.');
-                if (fileName) {
-                    resolve(fileName);  // Resolve the promise with the captured file name
-                } else {
-                    console.error('No JSON file name returned from indexer.');
-                    reject(new Error('No JSON file name returned from indexer.'));
-                }
-            }
-        });
-    });
+async function callIndexer(url) {
+    try {
+        const fileName = await indexLink(url);
+        console.log('Indexer process completed.');
+        return fileName;
+    } catch (error) {
+        console.error('Error during indexing:', error);
+        throw error; // Rethrow or handle error appropriately
+    }
 }
 
 dotenv.config();
@@ -282,7 +239,7 @@ async function generateResponseFromLink(filename) {
                         if (isFirstChunk) {
                             let finalElapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
                             await printTextSymbolBySymbol(`\nReceived first chunk after ${finalElapsedTime.toFixed(1)} seconds.`);
-                            await printTextSymbolBySymbol(`Model:`);
+                            await printTextSymbolBySymbol(`\nModel: `);
                             isFirstChunk = false;
                         }
                         await printTextSymbolBySymbol(chunk.text()); // Use the function to print chunk smoothly

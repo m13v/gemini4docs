@@ -1,4 +1,4 @@
-Yo, glad you are here! Send me a hi message at i@m13v.com or Discord: matthew.ddy or https://t.me/matthew_ddi
+I'd love your feedback: simply say "hi" at i@m13v.com or Discord: matthew.ddy or https://t.me/matthew_ddi
 
 Installation:
 npm install -g gemini4docs
