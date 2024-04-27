@@ -1,6 +1,28 @@
 import { Builder, By, Key, until } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+async function loadExistingData(baseUrl) {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const sanitizedFilename = baseUrl.replace(/\W+/g, '_') + '.json';
+    const filePath = path.join(__dirname, sanitizedFilename);
+
+    if (fs.existsSync(filePath)) {
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        return {
+            todoLinks: new Map(Object.entries(data.links)),
+            allLinks: new Set(Object.keys(data.links)),
+            totalWords: data.total_words,
+            filteredTotalWords: data.filtered_total_words,
+            filename: filePath  // Return the file path as well
+        };
+    } else {
+        return { filename: filePath };  // Return only the file path if no data exists
+    }
+}
 
 async function saveTodoLinks(todoLinks, filename, totalWords, totalLinks, filteredTotalWords) {
     const sanitizedFilename = filename.replace(/\W+/g, '_') + '.json';
@@ -107,14 +129,18 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
 
 export async function main(baseUrl) {
     let driver = buildDriver();
-    const maxOccurrences = 1;  // Set maxOccurrences to 1 for strict filtering
-    let todoLinks = new Map([[baseUrl, { status: "not_indexed", word_count: 0 }]]);
+    const maxOccurrences = 1;
+    let { todoLinks, allLinks, totalWords, filteredTotalWords, filename } = await loadExistingData(baseUrl);
+
+    if (!todoLinks) {
+        todoLinks = new Map([[baseUrl, { status: "not_indexed", word_count: 0 }]]);
+        allLinks = new Set();
+        totalWords = 0;
+        filteredTotalWords = 0;
+    }
+
     let allTexts = [];
-    let allLinks = new Set();
-    let totalWords = 0;
-    let filteredTotalWords = 0;  
     let doneLinksCount = 0;
-    let filename = null;  // Declare filename here
 
     try {
         while (Array.from(todoLinks.values()).some(v => v.status === "not_indexed")) {
@@ -123,7 +149,7 @@ export async function main(baseUrl) {
                     let result = await indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences);
                     if (!result) {
                         console.error('No result returned from indexLink for URL:', url);
-                        continue; // Skip this iteration if result is undefined
+                        continue;
                     }
                     allLinks = result.allLinks;
                     totalWords += result.wordCount; 
