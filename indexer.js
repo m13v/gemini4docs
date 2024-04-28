@@ -3,6 +3,9 @@ import chrome from 'selenium-webdriver/chrome.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { EventEmitter } from 'events';
+const indexerEvents = new EventEmitter();
+import eventEmitter from './eventEmitter.js';  
 
 async function loadExistingData(baseUrl) {
     const __filename = fileURLToPath(import.meta.url);
@@ -104,8 +107,8 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
                         let urlParts = href.split('/');
                         let lastPart = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2]; // Handle trailing slash
                         let lastWord = lastPart.split('-').pop().split('?')[0]; // Handle hyphens and parameters
-                        process.stdout.write('\r\x1b[K');
-                        process.stdout.write(`${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${lastWord}, Words added: ${filteredWordCount}. Cookies: ${cookieStatus}`);
+                        //process.stdout.write('\r\x1b[K');
+                        eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${lastWord}, Words added: ${filteredWordCount}. Cookies: ${cookieStatus}`});
                     }
                 }
             }
@@ -155,8 +158,8 @@ export async function main(baseUrl) {
                     totalWords += result.wordCount; 
                     filteredTotalWords += result.filteredWordCount; 
                     doneLinksCount++;
-                    process.stdout.write('\r\x1b[K');
-                    process.stdout.write(`${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${result.lastWord}, Words added: ${result.filteredWordCount}. Cookies: ${result.cookieStatus}`);
+                    //process.stdout.write('\r\x1b[K');
+                    eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${result.lastWord}, Words added: ${result.filteredWordCount}. Cookies: ${result.cookieStatus}`});
                     if (result.status === 'Seems like it failed') {
                         console.log(`Failed to index ${url}. Exiting...`);
                         console.log(`Content: ${result.allText}`);
@@ -172,7 +175,7 @@ export async function main(baseUrl) {
                 }
             }
         }
-        console.log(`\nIndexing complete. Total links: ${allLinks.size}, Total words: ${totalWords}, Filtered total words: ${filteredTotalWords}`);
+        eventEmitter.emit('data_received', { message: `\nIndexing complete. Total links: ${allLinks.size}, Total words: ${totalWords}, Filtered total words: ${filteredTotalWords}`});
     } finally {
         await driver.quit();
     }

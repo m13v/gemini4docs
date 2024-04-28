@@ -5,16 +5,22 @@ import dotenv from 'dotenv';
 import readline from 'readline'; // Import the readline module
 import fetch from 'node-fetch';
 import { main as indexLink } from './indexer.js'; // Adjust the path as necessary
-
+import { EventEmitter } from 'events';
+const indexerEvents = new EventEmitter();
+import eventEmitter from './eventEmitter.js';  
+import chokidar from 'chokidar';
 
 async function callIndexer(url) {
     try {
-        const fileName = await indexLink(url);
-        console.log('Indexer process completed.');
-        return fileName;
+        indexLink(url).then(() => {
+            // console.log('Indexing completed for:', url);
+        }).catch(error => {
+            console.error('Error during indexing:', error);
+        });
+        return;
     } catch (error) {
-        console.error('Error during indexing:', error);
-        throw error; // Rethrow or handle error appropriately
+        console.error('Error during filename generation:', error);
+        throw error;  // Rethrow or handle error appropriately
     }
 }
 
@@ -57,12 +63,13 @@ async function performSearch(query) {
 
 // Function to count tokens for text-only input
 const countTokensForText = async (text) => {
-    await printTextSymbolBySymbol('Counting tokens for the provided docs...');
-    console.log('');
+    // await printTextSymbolBySymbol('Counting tokens for the provided docs...');
+    // console.log('');
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
     const { totalTokens } = await model.countTokens(text);
-    await printTextSymbolBySymbol(`Tokens input loaded: ${totalTokens}`);
-    console.log('');
+    eventEmitter.emit('docsUpdated', { message: `Tokens loaded: ${totalTokens}`});
+    // await printTextSymbolBySymbol(`Tokens loaded: ${totalTokens}`);
+    // console.log('');
     return totalTokens;
 };
 
@@ -79,11 +86,28 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function delayWithFeedback(ms) {
+    return new Promise(resolve => {
+        const startTime = Date.now();
+        let timerId = setInterval(() => {
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+            let elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+            process.stdout.write(`Loading... [${elapsedTime.toFixed(1)}s / ${(ms / 1000).toFixed(1)}s]`);
+        }, 100); // Update every 100 milliseconds
+
+        setTimeout(() => {
+            clearInterval(timerId);
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+            resolve();
+        }, ms);
+    });
+}
+
 async function printTextSymbolBySymbol(text) {
     const fastDelay = 1;  // Faster delay time in milliseconds
-    const slowDelay = 1; // Slower delay time in milliseconds
-    // const fastDelay = 5;  // Faster delay time in milliseconds
-    // const slowDelay = 10; // Slower delay time in milliseconds
+    const slowDelay = 10; // Slower delay time in milliseconds
     const speedThreshold = 150; // Length threshold to switch to faster printing
 
     for (let i = 0; i < text.length; i++) {
@@ -92,6 +116,61 @@ async function printTextSymbolBySymbol(text) {
         const delayTime = text.length > speedThreshold ? fastDelay : slowDelay;
         await delay(delayTime);
     }
+}
+
+async function askQuestionAnimated_with_logs(question) {
+    let previousLinesCount = 2;  // Track the number of lines printed previously
+
+    // Listener for data received events
+    eventEmitter.on('data_received', (data) => {
+        updateConsoleWithMessage(data.message, question, previousLinesCount);
+    });
+
+    // Listener for documentation updates
+    eventEmitter.on('docsUpdated', (data) => {
+        updateConsoleWithMessage(data.message, question, previousLinesCount);
+    });
+
+    // Function to update console with a message
+    function updateConsoleWithMessage(message, question, previousLinesCount) {
+        // Move up the cursor to the start of the previous two lines
+        process.stdout.write('\u001b[s');  // Save the current cursor position
+        process.stdout.moveCursor(0, -previousLinesCount);
+
+        // Clear the previous two lines
+        for (let i = 0; i < previousLinesCount; i++) {
+            process.stdout.clearLine(0);  // Clear the current line
+            process.stdout.cursorTo(0);   // Move cursor to the start of the line
+            if (i < previousLinesCount - 1) {
+                process.stdout.moveCursor(0, 1);  // Move down to the next line
+            }
+        }
+
+        // Move cursor back to the start of the first cleared line
+        process.stdout.moveCursor(0, -(previousLinesCount - 1));
+
+        // Prepare the log message and calculate how many lines it will occupy
+        const logMessage = `${message}`;
+        const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
+        console.log(logMessage);  // This adds a newline automatically
+
+        // Print the question and calculate lines
+        const questionLines = Math.ceil((question.length + 1) / process.stdout.columns);
+        console.log(question);  // This adds a newline automatically
+
+        process.stdout.write('\u001b[u');  // Restore the saved cursor position
+        // Update the count of lines currently printed to the console
+        previousLinesCount = logLines + questionLines;
+    }
+
+    return new Promise((resolve) => {
+        const readlineCallback = (answer) => {
+            eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
+            eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
+            resolve(answer);
+        };
+        rl.question('', readlineCallback);
+    });
 }
 
 // Example of using printTextSymbolBySymbol with rl.question
@@ -111,7 +190,45 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-// New function to ask for documentation type
+const handleDocumentationSearch = async (query) => {
+    await printTextSymbolBySymbol(`Search results for documentation related to: ${query}`);
+    console.log('');
+    const search_results = await performSearch(query);
+    if (search_results.error) {
+        await printTextSymbolBySymbol(search_results.error);
+        console.log('');
+        askForDocumentationType(); // Retry if there's an error
+    } else {
+        // Format and log the search results
+        const formattedResults = search_results.map(result => {
+            return `${result.number}: ${result.title}\n  ${result.link}\n  ${result.snippet}`;
+        }).join('\n\n');
+        console.log('');
+        await printTextSymbolBySymbol(formattedResults);
+        const selection = await new Promise(async (resolve) => { // Make the callback function async
+            process.stdout.write('\n'); // Add a newline at the end of the animation
+            console.log('');
+            const answer = await askQuestionAnimated('Type result index, or search for something new: ');
+            resolve(answer);
+        });
+        const selectedResult = search_results.find(result => result.number.toString() === selection);
+        if (selectedResult) {
+            console.log('');
+            await printTextSymbolBySymbol(`Indexing documentation: ${selectedResult.title}`);
+            console.log('');
+            let url = selectedResult.link;
+            callIndexer(url);
+            let fileName = url.replace(/\W+/g, '_') + '.json';
+            generateResponseFromLink(fileName); // Start the chat session with the filename
+        } else {
+            // Assume the user wants to perform a new search
+            await printTextSymbolBySymbol(`Searching for: ${selection}`);
+            console.log('');
+            handleDocumentationSearch(selection); // Perform the search with the new query
+        }
+    }
+};
+
 const askForDocumentationType = async () => {
     const answer = await askQuestionAnimated('Which documentation do you need? (link or keywords): ');
     const urlPattern = new RegExp('^(https?:\\/\\/)?' + // protocol
@@ -122,144 +239,153 @@ const askForDocumentationType = async () => {
         '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
     if (urlPattern.test(answer)) {
         await printTextSymbolBySymbol('Processing the link...');
-        const filename = await callIndexer(answer); // Now waits for completion
-        if (filename) {
-            generateResponseFromLink(filename); // Pass the JSON file path to the function
-        } else {
-            console.error('No JSON file path returned from indexer.');
-        }
+        callIndexer(answer);
+        let fileName = answer.replace(/\W+/g, '_') + '.json';
+        generateResponseFromLink(fileName); // Start the chat session with the filename
     } else {
-        await printTextSymbolBySymbol(`Search results for documentation related to: ${answer}`);
-        console.log('');
-        const search_results = await performSearch(answer);
-        if (search_results.error) {
-            await printTextSymbolBySymbol(search_results.error);
-            console.log('');
-            askForDocumentationType(); // Retry if there's an error
-        } else {
-            // Format and log the search results
-            const formattedResults = search_results.map(result => {
-                return `${result.number}: ${result.title}\n  ${result.link}\n  ${result.snippet}`;
-            }).join('\n\n');
-            console.log('');
-            await printTextSymbolBySymbol(formattedResults);
-            const selection = await new Promise(async (resolve) => { // Make the callback function async
-                process.stdout.write('\n'); // Add a newline at the end of the animation
-                console.log('');
-                const answer = await askQuestionAnimated('Type documentation index, or type "retry" to search again: ');
-                resolve(answer);
-            });
-            if (selection.toLowerCase() === 'retry') {
-                askForDocumentationType(); // Retry search
-            } else {
-                const selectedResult = search_results.find(result => result.number.toString() === selection);
-                if (selectedResult) {
-                    console.log('');
-                    await printTextSymbolBySymbol(`Indexing documentation: ${selectedResult.title}`);
-                    console.log('');
-                    const filename = await callIndexer(selectedResult.link); // Now waits for completion
-                    if (filename) {
-                        generateResponseFromLink(filename); // Pass the JSON file path to the function
-                    } else {
-                        console.error('No JSON file path returned from indexer.');
-                    }
-                } else {
-                    await printTextSymbolBySymbol('Invalid selection. Please try again.');
-                    askForDocumentationType(); // Invalid selection, retry
-                }
-            }
-        }
+        handleDocumentationSearch(answer);
     }
 };
+
 
 async function generateResponseFromLink(filename) {
     try {
         await printTextSymbolBySymbol(`Reading docs`);
         console.log('');
-        const fileContent = await fs.readFile(filename, 'utf8');
-        await printTextSymbolBySymbol('File content successfully read.');
-        console.log('');
+        watchFileChanges(filename);
+        await loadAndStartChat(filename);
+    } catch (error) {
+        console.error('Error generating response from link:', error);
+        rl.close(); // Ensure readline interface is closed on error
+    }
+}
 
+async function loadAndStartChat(filename) {
+    try {
+        // Check if file exists, retry if not
+        await checkFileExists(filename);
+        const fileContent = await fs.readFile(filename, 'utf8');
+        // await printTextSymbolBySymbol('File filtered content successfully read.');
+        // console.log('');
         const allData = JSON.parse(fileContent);
         let allContent = [];
 
-        // Iterate over all entries in the JSON file
         for (const [link, data] of Object.entries(allData.links)) {
-            if (data && data.content) {  // Check if data and content exist
-                let content = data.content; // Extract the full content of the link
+            if (data && data.filtered_content) {
+                let content = data.filtered_content;
                 allContent.push(`Link: ${link}\nContent: ${content}\n`);
             }
         }
 
         let content = allContent.join('\n');
         await countTokensForText(content);
-        console.log('Starting chat with the model...');
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
-        const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: content }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: "Thank you for the information. How can I assist you further?" }],
-                },
-            ],
-            apiVersion: 'v1beta'
-        });
-        // Function to ask for the message prompt
-        const askForMessagePrompt = async () => {
-            const msg = await askQuestionAnimated('Prompt (or type "exit"): ');
-            if (msg.toLowerCase() === "exit") {
-                await printTextSymbolBySymbol("Exiting...");
-                rl.close();
-            } else {
-                await printTextSymbolBySymbol(`Sending message to the model...`);
-                console.log('');
-                const startTime = Date.now();
-                let timerId = setInterval(() => {
-                    // Update the console with the elapsed time every tenth of a second
-                    process.stdout.clearLine(0);
-                    process.stdout.cursorTo(0);
-                    let elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
-                    process.stdout.write(`Thinking... [${elapsedTime.toFixed(1)}s].`);
-                }, 100); // Update every 100 milliseconds (0.1 second)
-
-                try {
-                    const modifiedMsg = msg + ". Please provide response solely based on the provided context";
-                    const result = await chat.sendMessageStream(modifiedMsg);
-                    clearInterval(timerId); // Stop the timer once the first chunk is received
-                    process.stdout.clearLine(0);
-                    process.stdout.cursorTo(0);
-
-                    let text = '';
-                    let isFirstChunk = true;
-                    for await (const chunk of result.stream) {
-                        if (isFirstChunk) {
-                            let finalElapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
-                            await printTextSymbolBySymbol(`\nReceived first chunk after ${finalElapsedTime.toFixed(1)} seconds.`);
-                            await printTextSymbolBySymbol(`\nModel: `);
-                            isFirstChunk = false;
-                        }
-                        await printTextSymbolBySymbol(chunk.text()); // Use the function to print chunk smoothly
-                        text += chunk.text();
-                    }
-                } catch (error) {
-                    clearInterval(timerId); // Ensure to clear the timer in case of an error
-                    console.error('Failed to fetch response:', error);
-                }
-                askForMessagePrompt();
-            }
-        };
-
-        // Start asking for user input
-        askForMessagePrompt();
-
+        // console.log('Starting chat with the model...');
+        // console.log('--------------------------------');
+        startChatSession(content);
     } catch (error) {
-        console.error('Error generating response from link:', error);
-        rl.close(); // Ensure readline interface is closed on error
+        console.error('Error loading or starting chat:', error);
     }
 }
+
+async function checkFileExists(filename, retries = 5) {
+    try {
+        await fs.access(filename);
+    } catch (error) {
+        if (retries > 0) {
+            await printTextSymbolBySymbol("Waiting for file... ");
+            await delayWithFeedback(3000); 
+            return checkFileExists(filename, retries - 1);
+        } else {
+            throw new Error('File does not exist after multiple retries.');
+        }
+    }
+}
+
+async function startChatSession(content) {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+    const chat = model.startChat({
+        history: [
+            {
+                role: "user",
+                parts: [{ text: content }],
+            },
+            {
+                role: "model",
+                parts: [{ text: "Thank you for the information. How can I assist you further?" }],
+            },
+        ],
+        apiVersion: 'v1beta'
+    });
+    // printTextSymbolBySymbol('Type your prompt (or type "exit"):');
+    askForMessagePrompt(chat);
+}
+
+let timeout;
+function watchFileChanges(filename) {
+    // console.log(`Starting to watch changes on ${filename}`);
+    const watcher = chokidar.watch(filename, {
+        ignored: /(^|[\/\\])\../, // ignore dotfiles
+        persistent: true
+    });
+
+    watcher.on('change', path => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            // console.log(`...Docs updated.`);
+            eventEmitter.emit('docsUpdated', { message: `...Docs updated.`});
+            loadAndStartChat(path);
+        }, 3000); // Adjust debounce time as needed
+    });
+}
+
+async function askForMessagePrompt(chat) {
+    if (!chat || typeof chat.sendMessageStream !== 'function') {
+        console.error('Invalid chat session object.');
+        return;
+    }
+    const msg = await askQuestionAnimated_with_logs('Type your prompt (or type "exit"):');
+    if (msg.toLowerCase() === "exit") {
+        await printTextSymbolBySymbol("Exiting...");
+        rl.close();
+        process.exit(0); 
+    } else {
+        await printTextSymbolBySymbol(`Sending message to the model...`);
+        console.log('');
+        const startTime = Date.now();
+        let timerId = setInterval(() => {
+            // Update the console with the elapsed time every tenth of a second
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+            let elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+            process.stdout.write(`Thinking... [${elapsedTime.toFixed(1)}s].`);
+        }, 100); // Update every 100 milliseconds (0.1 second)
+
+        try {
+            const modifiedMsg = msg + ". Please provide response solely based on the provided context";
+            const result = await chat.sendMessageStream(modifiedMsg);
+            clearInterval(timerId); // Stop the timer once the first chunk is received
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+
+            let text = '';
+            let isFirstChunk = true;
+            for await (const chunk of result.stream) {
+                if (isFirstChunk) {
+                    let finalElapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+                    await printTextSymbolBySymbol(`\nReceived first chunk after ${finalElapsedTime.toFixed(1)} seconds.`);
+                    await printTextSymbolBySymbol(`\nModel: `);
+                    isFirstChunk = false;
+                }
+                await printTextSymbolBySymbol(chunk.text()); // Use the function to print chunk smoothly
+                text += chunk.text();
+            }
+            askForMessagePrompt(chat);  // Recursive call to allow continuous interaction
+        } catch (error) {
+            clearInterval(timerId); // Ensure to clear the timer in case of an error
+            console.error('Failed to fetch response:', error);
+            askForMessagePrompt(chat);  // Recursive call to allow continuous interaction
+        }
+    }
+};
 
 askForDocumentationType();
