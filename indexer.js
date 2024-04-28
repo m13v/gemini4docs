@@ -7,9 +7,10 @@ import { EventEmitter } from 'events';
 const indexerEvents = new EventEmitter();
 import eventEmitter from './eventEmitter.js';  
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 async function loadExistingData(baseUrl) {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
     const sanitizedFilename = baseUrl.replace(/\W+/g, '_') + '.json';
     const filePath = path.join(__dirname, sanitizedFilename);
 
@@ -29,7 +30,8 @@ async function loadExistingData(baseUrl) {
 
 async function saveTodoLinks(todoLinks, filename, totalWords, totalLinks, filteredTotalWords) {
     const sanitizedFilename = filename.replace(/\W+/g, '_') + '.json';
-    fs.writeFileSync(sanitizedFilename, JSON.stringify({ total_words: totalWords, total_links: totalLinks, filtered_total_words: filteredTotalWords, links: todoLinks }, null, 4), 'utf-8');
+    const fullPath = path.join(__dirname, sanitizedFilename);  // Use __dirname to ensure the path is absolute
+    fs.writeFileSync(fullPath, JSON.stringify({ total_words: totalWords, total_links: totalLinks, filtered_total_words: filteredTotalWords, links: todoLinks }, null, 4), 'utf-8');
     return sanitizedFilename;
 }
 

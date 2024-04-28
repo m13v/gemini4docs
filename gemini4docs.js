@@ -9,6 +9,11 @@ import { EventEmitter } from 'events';
 const indexerEvents = new EventEmitter();
 import eventEmitter from './eventEmitter.js';  
 import chokidar from 'chokidar';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function callIndexer(url) {
     try {
@@ -219,6 +224,7 @@ const handleDocumentationSearch = async (query) => {
             let url = selectedResult.link;
             callIndexer(url);
             let fileName = url.replace(/\W+/g, '_') + '.json';
+            console.log(fileName);
             generateResponseFromLink(fileName); // Start the chat session with the filename
         } else {
             // Assume the user wants to perform a new search
@@ -250,23 +256,25 @@ const askForDocumentationType = async () => {
 
 async function generateResponseFromLink(filename) {
     try {
+        console.log('Generating response from link:', filename);
+        // Ensure filename is just the name, not the full path
+        const fullPath = path.join(__dirname, filename);
         await printTextSymbolBySymbol(`Reading docs`);
+        console.log('Generating response from fullPath:', fullPath);
         console.log('');
-        watchFileChanges(filename);
-        await loadAndStartChat(filename);
+        watchFileChanges(fullPath);
+        printTextSymbolBySymbol('Proceed to starting chat');
+        await loadAndStartChat(fullPath);
     } catch (error) {
         console.error('Error generating response from link:', error);
         rl.close(); // Ensure readline interface is closed on error
     }
 }
 
-async function loadAndStartChat(filename) {
+async function loadAndStartChat(fullPath) {
     try {
-        // Check if file exists, retry if not
-        await checkFileExists(filename);
-        const fileContent = await fs.readFile(filename, 'utf8');
-        // await printTextSymbolBySymbol('File filtered content successfully read.');
-        // console.log('');
+        await checkFileExists(fullPath);  // fullPath is now directly used
+        const fileContent = await fs.readFile(fullPath, 'utf8');  // Use fullPath here
         const allData = JSON.parse(fileContent);
         let allContent = [];
 
@@ -279,24 +287,25 @@ async function loadAndStartChat(filename) {
 
         let content = allContent.join('\n');
         await countTokensForText(content);
-        // console.log('Starting chat with the model...');
-        // console.log('--------------------------------');
         startChatSession(content);
     } catch (error) {
         console.error('Error loading or starting chat:', error);
     }
 }
 
-async function checkFileExists(filename, retries = 5) {
+async function checkFileExists(fullPath, retries = 5) {
+
     try {
-        await fs.access(filename);
+        await fs.access(fullPath);
+        console.log(`Success: File found at path ${fullPath}`);  // Print success message
     } catch (error) {
+        console.log(`Checking file at path: ${fullPath}`);  // Print the full path being checked
         if (retries > 0) {
             await printTextSymbolBySymbol("Waiting for file... ");
-            await delayWithFeedback(3000); 
-            return checkFileExists(filename, retries - 1);
+            await delayWithFeedback(3000);
+            return checkFileExists(fullPath, retries - 1);
         } else {
-            throw new Error('File does not exist after multiple retries.');
+            throw new Error(`File does not exist at path ${fullPath} after multiple retries.`);
         }
     }
 }
@@ -321,9 +330,8 @@ async function startChatSession(content) {
 }
 
 let timeout;
-function watchFileChanges(filename) {
-    // console.log(`Starting to watch changes on ${filename}`);
-    const watcher = chokidar.watch(filename, {
+function watchFileChanges(fullPath) {
+    const watcher = chokidar.watch(fullPath, {
         ignored: /(^|[\/\\])\../, // ignore dotfiles
         persistent: true
     });
@@ -331,9 +339,8 @@ function watchFileChanges(filename) {
     watcher.on('change', path => {
         clearTimeout(timeout);
         timeout = setTimeout(() => {
-            // console.log(`...Docs updated.`);
             eventEmitter.emit('docsUpdated', { message: `...Docs updated.`});
-            loadAndStartChat(path);
+            loadAndStartChat(fullPath);  // Ensure fullPath is used
         }, 3000); // Adjust debounce time as needed
     });
 }

@@ -1,0 +1,77 @@
+{
+    "total_words": 984,
+    "total_links": 9,
+    "filtered_total_words": 716,
+    "links": {
+        "http://docs.teselagen.com/en/": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAdvice and answers from the TeselaGen Biotechnology Team\nDESIGN module\n\nHelp system articles for the DESIGN module\n\nE\nBy Ximena and 4 others\n27 articles\nBUILD module\n\nHelp system articles for the BUILD module\n\nE\nT\nBy Eduardo and 10 others\n75 articles\nTEST module (Beta)\n\nHelp system articles for the TEST module\n\nE\nA\nBy Eduardo and 1 other\n7 articles\nDISCOVER module (Beta)\n\nHelp system articles for the DISCOVER module\n\nE\nBy Eduardo and 1 other\n7 articles\nPlatform Services\n\nArticles covering general platform services\n\nD\nA\nBy Diego and 3 others\n11 articles\nResource Library and References\n\nBackground information and useful academic references\n\nE\nBy Eduardo\n1 article\nDeprecated Docs (old app)\nBy Ximena\n6 articles\nFAQs\n\nGet answers to frequently asked questions about TeselaGen's modules.\n\nE\nBy Eduardo\n8 articles\nSolutions\n\nTeselaGen's impact on industries.\n\nE\nBy Eduardo\n1 article\nWe run on Intercom",
+            "word_count": 150,
+            "filtered_content": "Advice and answers from the TeselaGen Biotechnology Team\nDESIGN module\nHelp system articles for the DESIGN module\nBy Ximena and 4 others\n27 articles\nBUILD module\nHelp system articles for the BUILD module\nT\nBy Eduardo and 10 others\n75 articles\nTEST module (Beta)\nHelp system articles for the TEST module\nDISCOVER module (Beta)\nHelp system articles for the DISCOVER module\nPlatform Services\nArticles covering general platform services\nD\nBy Diego and 3 others\n11 articles\nResource Library and References\nBackground information and useful academic references\nDeprecated Docs (old app)\nBy Ximena\n6 articles\nFAQs\nGet answers to frequently asked questions about TeselaGen's modules.\n8 articles\nSolutions\nTeselaGen's impact on industries.\nWe run on Intercom",
+            "filtered_word_count": 115
+        },
+        "http://docs.teselagen.com/en/collections/313777-design-module": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nDESIGN module\nDESIGN module\n\nHelp system articles for the DESIGN module\n\nE\nBy Ximena and 4 others\n27 articles\nWorking with Libraries\nIntroduction\nIntroduction to the DESIGN Module\nGlossary: DESIGN Module\nTutorials\nGetting Started: TeselaGen Community Edition\nHow To Create An Account: TeselaGen Community Edition\nAuto-Annotating DNA in Bulk\nCombinatorial Gibson DNA Assembly\nCombinatorial Golden Gate DNA Assembly – Part 2\nCombinatorial Golden Gate DNA Assembly – Part 1\nWorking with the DESIGN module\nDNA assembly errors and warnings\nAccessing Data\nFile formats (1/3: Sequence file formats)\nFile formats (2/3: Design file formats)\nFile formats (3/3: Getting familiar)\nCreating Parts from Features\nGlobal Search\nImporting DNA Sequences\nKeyboard Shortcuts\nThe Login Screen\nUser Settings\nTop Menu Options\nDesigns\nHierarchical Design - Digest/Ligation\nCreating and Importing Designs\nSetting and Understanding Basic Assembly Methods\nUploading a Design in CSV Format\nLoading Example Designs\nWorking with Parts in the Design Editor\nWe run on Intercom",
+            "word_count": 156,
+            "filtered_content": "All Collections\nWorking with Libraries\nIntroduction\nIntroduction to the DESIGN Module\nGlossary: DESIGN Module\nTutorials\nGetting Started: TeselaGen Community Edition\nHow To Create An Account: TeselaGen Community Edition\nAuto-Annotating DNA in Bulk\nCombinatorial Gibson DNA Assembly\nCombinatorial Golden Gate DNA Assembly – Part 2\nCombinatorial Golden Gate DNA Assembly – Part 1\nWorking with the DESIGN module\nDNA assembly errors and warnings\nAccessing Data\nFile formats (1/3: Sequence file formats)\nFile formats (2/3: Design file formats)\nFile formats (3/3: Getting familiar)\nCreating Parts from Features\nGlobal Search\nImporting DNA Sequences\nKeyboard Shortcuts\nThe Login Screen\nUser Settings\nTop Menu Options\nDesigns\nHierarchical Design - Digest/Ligation\nCreating and Importing Designs\nSetting and Understanding Basic Assembly Methods\nUploading a Design in CSV Format\nLoading Example Designs\nWorking with Parts in the Design Editor",
+            "filtered_word_count": 131
+        },
+        "http://docs.teselagen.com/en/collections/313799-build-module": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nBUILD module\nBUILD module\n\nHelp system articles for the BUILD module\n\nE\nT\nBy Eduardo and 10 others\n75 articles\nBarcode: Open items by entering or scanning Barcode\nIntroduction\nIntroduction to the BUILD module\nSites, Locations, Equipment, and Containers\nLocations\nEquipment\nContainers\nSites and Location Types\nEquipment and Container Types\nSample Management\nCreating a Strain Archive Part I\nCreating a Strain Archive Part II\nTeselaGen Sample Management Hierarchy\nSequences, Materials, Samples, Aliquots\nReagents, Reagent Lots, Additives\nMoving Plates and Tubes Around the Lab\nFreezer Management\nPlacement Strategies\nWorkflows\nWorkflow definitions\nExample BUILD Workflow - Import Design\nBioShop\nTeselaGen's BioShop\nTools Library\nIDT Ordering Tool\nParse Experiment Data tool\nCreate Reagent List tool\nCreate Data Table from Plate tool\nTwist Ordering Tool\nAdd Reagents Tool\nImport Experiment Data in Assay tool\nAliquot Rearray Tool\nAssembly Reaction Planning Tool\nBacterial Conjugation Tool\nColony Picking Feedback Tool\nConcatenate Worklists Tool\nCreate Custom Worklist Tool\nCreate Plate Map Tool\nCreate Reaction Map Tool\nDehydration Tool\nDesalt Tool\nDNA Assembly Construct Selection Tool\nElution Tool\nExecute Reaction Map Tool\nExecute Worklist Tool\nInventory Check Tool\nLysis Tool\nMicrobial Transformation Tool\nMove Plates Tool\nNormalization Planning Tool\nOnline DNA Ordering Tool\nPCR Planning and Inventory Check Tool\nPlasmid Prep Tool\nPlasmid Purification Planning Tool\nPlate Prep Tool\nPlate Reformatting Tool\nPlate Registration (CSV) Tool\nPlate Registration (Plate Map Groups) Tool\nPooling Tool\nProtein Purification Tool\nProtein Purification Planning Tool\nRun PCR Tool\nSample Multiplexing Tool\nSample Quality Control Tool\nSequence Association Tool\nSequencing Quality Control Tool\nSpin-down Tool\nUpdate Plates Tool\nWorklist Planning Tool\nSequences Libraries\nWorking with DNA Sequences\nWorking with Amino Acid Sequences\nCreating Feature Groups\nWorklists\nWorklists\nBioMek Worklist\nEcho Worklist\nepMotion Worklist\nHamilton Worklist\nMosquito Worklist\nTecan Worklist\nData\nReports\nData Import Pipeline\nWe run on Intercom",
+            "word_count": 299,
+            "filtered_content": "Barcode: Open items by entering or scanning Barcode\nIntroduction to the BUILD module\nSites, Locations, Equipment, and Containers\nLocations\nEquipment\nContainers\nSites and Location Types\nEquipment and Container Types\nSample Management\nCreating a Strain Archive Part I\nCreating a Strain Archive Part II\nTeselaGen Sample Management Hierarchy\nSequences, Materials, Samples, Aliquots\nReagents, Reagent Lots, Additives\nMoving Plates and Tubes Around the Lab\nFreezer Management\nPlacement Strategies\nWorkflows\nWorkflow definitions\nExample BUILD Workflow - Import Design\nBioShop\nTeselaGen's BioShop\nTools Library\nIDT Ordering Tool\nParse Experiment Data tool\nCreate Reagent List tool\nCreate Data Table from Plate tool\nTwist Ordering Tool\nAdd Reagents Tool\nImport Experiment Data in Assay tool\nAliquot Rearray Tool\nAssembly Reaction Planning Tool\nBacterial Conjugation Tool\nColony Picking Feedback Tool\nConcatenate Worklists Tool\nCreate Custom Worklist Tool\nCreate Plate Map Tool\nCreate Reaction Map Tool\nDehydration Tool\nDesalt Tool\nDNA Assembly Construct Selection Tool\nElution Tool\nExecute Reaction Map Tool\nExecute Worklist Tool\nInventory Check Tool\nLysis Tool\nMicrobial Transformation Tool\nMove Plates Tool\nNormalization Planning Tool\nOnline DNA Ordering Tool\nPCR Planning and Inventory Check Tool\nPlasmid Prep Tool\nPlasmid Purification Planning Tool\nPlate Prep Tool\nPlate Reformatting Tool\nPlate Registration (CSV) Tool\nPlate Registration (Plate Map Groups) Tool\nPooling Tool\nProtein Purification Tool\nProtein Purification Planning Tool\nRun PCR Tool\nSample Multiplexing Tool\nSample Quality Control Tool\nSequence Association Tool\nSequencing Quality Control Tool\nSpin-down Tool\nUpdate Plates Tool\nWorklist Planning Tool\nSequences Libraries\nWorking with DNA Sequences\nWorking with Amino Acid Sequences\nCreating Feature Groups\nBioMek Worklist\nEcho Worklist\nepMotion Worklist\nHamilton Worklist\nMosquito Worklist\nTecan Worklist\nData\nReports\nData Import Pipeline",
+            "filtered_word_count": 268
+        },
+        "http://docs.teselagen.com/en/collections/313819-test-module-beta": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nTEST module (Beta)\nTEST module (Beta)\n\nHelp system articles for the TEST module\n\nE\nA\nBy Eduardo and 1 other\n7 articles\nVisualize Your Data\nIntroduction\nIntroduction to the TEST Module\nWorking with the TEST module\nTEST Data Importer\nTEST Data Mapping\nTEST Auto Mapper / Mapping Suggestion\nTEST API\nGlossary: TEST Module\nWe run on Intercom",
+            "word_count": 61,
+            "filtered_content": "Visualize Your Data\nIntroduction to the TEST Module\nWorking with the TEST module\nTEST Data Importer\nTEST Data Mapping\nTEST Auto Mapper / Mapping Suggestion\nTEST API\nGlossary: TEST Module",
+            "filtered_word_count": 30
+        },
+        "http://docs.teselagen.com/en/collections/2149285-discover-module-beta": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nDISCOVER module (Beta)\nDISCOVER module (Beta)\n\nHelp system articles for the DISCOVER module\n\nE\nBy Eduardo and 1 other\n7 articles\nIntroduction\nDISCOVER: Statistical Metrics for model evaluation\nDISCOVER: Candidate Selection\nDISCOVER: Design Space Complexity\nDISCOVER: Cross-validation\nIntroduction to the DISCOVER module\nWorking with the DISCOVER module\nGlossary: DISCOVER Module\nClosing the DBTL loop with TeselaGen\nWe run on Intercom",
+            "word_count": 64,
+            "filtered_content": "DISCOVER: Statistical Metrics for model evaluation\nDISCOVER: Candidate Selection\nDISCOVER: Design Space Complexity\nDISCOVER: Cross-validation\nIntroduction to the DISCOVER module\nWorking with the DISCOVER module\nGlossary: DISCOVER Module\nClosing the DBTL loop with TeselaGen",
+            "filtered_word_count": 34
+        },
+        "http://docs.teselagen.com/en/collections/2498038-platform-services": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nPlatform Services\nPlatform Services\n\nArticles covering general platform services\n\nD\nA\nBy Diego and 3 others\n11 articles\nIntro to Projects\nIntroduction to the API\nIntroduction To External Integrations\nMicroservices for Custom Algorithms\nCustom Form Inputs (Integrations)\nDesign Review Configuration\nDesign Approval Process\nDefault Form Values (Admin Configurable)\nNode-red Integration Server\nExternal Integration: DNA Sequence Import\nCRISPR Guide RNA Designer\nWe run on Intercom",
+            "word_count": 68,
+            "filtered_content": "Intro to Projects\nIntroduction to the API\nIntroduction To External Integrations\nMicroservices for Custom Algorithms\nCustom Form Inputs (Integrations)\nDesign Review Configuration\nDesign Approval Process\nDefault Form Values (Admin Configurable)\nNode-red Integration Server\nExternal Integration: DNA Sequence Import\nCRISPR Guide RNA Designer",
+            "filtered_word_count": 42
+        },
+        "http://docs.teselagen.com/en/collections/313678-resource-library-and-references": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nResource Library and References\nResource Library and References\n\nBackground information and useful academic references\n\nE\nBy Eduardo\n1 article\nGlossary\nWe run on Intercom",
+            "word_count": 28,
+            "filtered_content": "Glossary",
+            "filtered_word_count": 1
+        },
+        "http://docs.teselagen.com/en/collections/313666-deprecated-docs-old-app": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nDeprecated Docs (old app)\nDeprecated Docs (old app)\nBy Ximena\n6 articles\nThe Library View\nStrains\nCollaboration and Sharing in DESIGN\nProtocols\nAmino Acid Sequences\nDNA Parts\nWe run on Intercom",
+            "word_count": 35,
+            "filtered_content": "The Library View\nStrains\nCollaboration and Sharing in DESIGN\nProtocols\nAmino Acid Sequences\nDNA Parts",
+            "filtered_word_count": 15
+        },
+        "http://docs.teselagen.com/en/collections/2149398-faqs": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nFAQs\nFAQs\n\nGet answers to frequently asked questions about TeselaGen's modules.\n\nE\nBy Eduardo\n8 articles\nWhat design file formats does TeselaGen support?\nWhat sequence file formats does TeselaGen support?\nHow can I quickly access my recent designs, sequences and assembly reports?\nDoes TeselaGen support both light mode and dark mode views?\nHow do I search and filter my data?\nHow can I quickly access my recent user requests, jobs and runs?\nWhat is a Lab in TeselaGen? And what is it for?\nWhat browsers are supported by TeselaGen?\nWe run on Intercom",
+            "word_count": 97,
+            "filtered_content": "What design file formats does TeselaGen support?\nWhat sequence file formats does TeselaGen support?\nHow can I quickly access my recent designs, sequences and assembly reports?\nDoes TeselaGen support both light mode and dark mode views?\nHow do I search and filter my data?\nHow can I quickly access my recent user requests, jobs and runs?\nWhat is a Lab in TeselaGen? And what is it for?\nWhat browsers are supported by TeselaGen?",
+            "filtered_word_count": 73
+        },
+        "http://docs.teselagen.com/en/collections/2151223-solutions": {
+            "status": "Looks good",
+            "content": "English\nEnglish\nAll Collections\nSolutions\nSolutions\n\nTeselaGen's impact on industries.\n\nE\nBy Eduardo\n1 article\nBuilding a Better DNA Assembly Line [Contributions]\nWe run on Intercom",
+            "word_count": 26,
+            "filtered_content": "Building a Better DNA Assembly Line [Contributions]",
+            "filtered_word_count": 7
+        }
+    }
+}
