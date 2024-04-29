@@ -11,9 +11,21 @@ import eventEmitter from './eventEmitter.js';
 import chokidar from 'chokidar';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { marked } from 'marked';
+import TerminalRenderer from 'marked-terminal';
+import { highlight } from 'cli-highlight';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+marked.setOptions({
+    renderer: new TerminalRenderer({
+      // Custom renderer for code blocks
+      code: (code, language) => {
+        return highlight(code, { language: language || 'javascript', theme: 'monokai' });
+      }
+    })
+  });
 
 async function callIndexer(url) {
     try {
@@ -376,7 +388,10 @@ async function askForMessagePrompt(chat) {
 
             let text = '';
             let isFirstChunk = true;
+            let lineCount = 0;
             for await (const chunk of result.stream) {
+                const chunkText = chunk.text();
+                lineCount += (chunkText.match(/\n/g) || []).length + 1; // Count new lines and add one for the current line
                 if (isFirstChunk) {
                     let finalElapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
                     await printTextSymbolBySymbol(`\nReceived first chunk after ${finalElapsedTime.toFixed(1)} seconds.`);
@@ -386,6 +401,13 @@ async function askForMessagePrompt(chat) {
                 await printTextSymbolBySymbol(chunk.text()); // Use the function to print chunk smoothly
                 text += chunk.text();
             }
+            process.stdout.moveCursor(0, -lineCount);
+            process.stdout.clearScreenDown();
+            const output = marked(text);
+            console.log(output);
+            console.log('\n___________________________________________________________________________________'); // Indicate the end of the stream
+            await printTextSymbolBySymbol('\nType your prompt (or type "exit"):'); // Indicate the end of the stream
+            console.log('\n');
             askForMessagePrompt(chat);  // Recursive call to allow continuous interaction
         } catch (error) {
             clearInterval(timerId); // Ensure to clear the timer in case of an error

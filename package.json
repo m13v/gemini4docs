@@ -1,12 +1,13 @@
 {
   "dependencies": {
     "@google/generative-ai": "^0.8.0",
-    "ansi-escapes": "^6.2.1",
     "chokidar": "^3.6.0",
     "chromedriver": "^124.0.1",
+    "cli-highlight": "^2.1.11",
     "dotenv": "^16.4.5",
-    "e2b": "^0.13.2",
+    "highlight.js": "^11.9.0",
     "marked": "^12.0.2",
+    "marked-highlight": "^2.1.1",
     "marked-terminal": "^7.0.0",
     "node-fetch": "^3.3.2",
     "selenium-webdriver": "^4.20.0"
