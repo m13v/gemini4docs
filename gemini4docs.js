@@ -224,7 +224,7 @@ const handleDocumentationSearch = async (query) => {
             let url = selectedResult.link;
             callIndexer(url);
             let fileName = url.replace(/\W+/g, '_') + '.json';
-            console.log(fileName);
+            // console.log(fileName);
             generateResponseFromLink(fileName); // Start the chat session with the filename
         } else {
             // Assume the user wants to perform a new search
@@ -256,12 +256,12 @@ const askForDocumentationType = async () => {
 
 async function generateResponseFromLink(filename) {
     try {
-        console.log('Generating response from link:', filename);
+        // console.log('Generating response from link:', filename);
         // Ensure filename is just the name, not the full path
         const fullPath = path.join(__dirname, filename);
         await printTextSymbolBySymbol(`Reading docs`);
-        console.log('Generating response from fullPath:', fullPath);
-        console.log('');
+        // console.log('Generating response from fullPath:', fullPath);
+        // console.log('');
         watchFileChanges(fullPath);
         printTextSymbolBySymbol('Proceed to starting chat');
         await loadAndStartChat(fullPath);
@@ -297,9 +297,9 @@ async function checkFileExists(fullPath, retries = 5) {
 
     try {
         await fs.access(fullPath);
-        console.log(`Success: File found at path ${fullPath}`);  // Print success message
+        // console.log(`Success: File found at path ${fullPath}`);  // Print success message
     } catch (error) {
-        console.log(`Checking file at path: ${fullPath}`);  // Print the full path being checked
+        // console.log(`Checking file at path: ${fullPath}`);  // Print the full path being checked
         if (retries > 0) {
             await printTextSymbolBySymbol("Waiting for file... ");
             await delayWithFeedback(3000);
