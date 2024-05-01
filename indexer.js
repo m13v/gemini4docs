@@ -97,6 +97,7 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
     let status = '';
     let cookieStatus = cookiesAccepted ? "Accepted" : "n/a";
     let lastWord = "";  // Initialize lastWord to ensure it's always defined
+    let timestamp = new Date().toISOString();
 
     while (attempt < maxAttempts) {
         try {
@@ -109,7 +110,6 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
                         let urlParts = href.split('/');
                         let lastPart = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2]; // Handle trailing slash
                         let lastWord = lastPart.split('-').pop().split('?')[0]; // Handle hyphens and parameters
-                        //process.stdout.write('\r\x1b[K');
                         eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${lastWord}, Words added: ${filteredWordCount}. Cookies: ${cookieStatus}`});
                     }
                 }
@@ -122,13 +122,12 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
             }
         }
     }
-
     if (allText.length < 100) {
         status = 'Seems like it failed';
     } else {
         status = 'Looks good';
     }
-    return { allLinks, allText, filteredText, status, wordCount, filteredWordCount, totalWords, lastWord, cookieStatus };
+    return { allLinks, allText, filteredText, status, wordCount, filteredWordCount, totalWords, lastWord, cookieStatus, timestamp };
 }
 
 
@@ -160,7 +159,6 @@ export async function main(baseUrl) {
                     totalWords += result.wordCount; 
                     filteredTotalWords += result.filteredWordCount; 
                     doneLinksCount++;
-                    //process.stdout.write('\r\x1b[K');
                     eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${result.lastWord}, Words added: ${result.filteredWordCount}. Cookies: ${result.cookieStatus}`});
                     if (result.status === 'Seems like it failed') {
                         console.log(`Failed to index ${url}. Exiting...`);
@@ -169,10 +167,10 @@ export async function main(baseUrl) {
                     }
                     for (let link of allLinks) {
                         if (!todoLinks.has(link)) {
-                            todoLinks.set(link, { status: "not_indexed", word_count: 0, filtered_word_count: 0, filtered_content: "" });
+                            todoLinks.set(link, { status: "not_indexed", word_count: 0, filtered_word_count: 0, filtered_content: "", added_timestamp: result.timestamp });
                         }
                     }
-                    todoLinks.set(url, { status: result.status, content: result.allText, word_count: result.wordCount, filtered_content: result.filteredText, filtered_word_count: result.filteredWordCount });
+                    todoLinks.set(url, { status: result.status, indexed_timestamp: result.timestamp, content: result.allText, word_count: result.wordCount, filtered_content: result.filteredText, filtered_word_count: result.filteredWordCount });
                     filename = await saveTodoLinks(Object.fromEntries(todoLinks), baseUrl, totalWords, allLinks.size, filteredTotalWords);
                 }
             }
