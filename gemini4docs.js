@@ -46,34 +46,31 @@ const Geminiapikey = 'AIzaSyBGG6YF0vXN8H27ZIN7ibGJvM-ReaVURWY'; //temporary api 
 // const Geminiapikey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
 const genAI = new GoogleGenerativeAI(Geminiapikey);
 
-async function performSearch(query) {
-    const google_search_apiKey = 'AIzaSyAw9uxhcuqjBUu4WyM-9gZBbRIqUCpvczc'; //temporary api key
-    const searchEngineId = '862ace6a23ddc4e37'; //temporary api key
-    const modifiedQuery = `${query} documentation`;
-    // const google_search_apiKey = process.env.GOOGLE_SEARCH;
-    // const searchEngineId = process.env.SEARCH_ENGINE_ID;
-    const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(modifiedQuery)}&key=${google_search_apiKey}&cx=${searchEngineId}`;
+const workerUrl = 'https://worker-aged-night-839d.i-f9f.workers.dev';
 
+async function performSearch(query) {
     try {
-        const response = await fetch(url);
+        const response = await fetch(workerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'search', query: query })
+        });
         const results = await response.json();
 
-        if (results.items && results.items.length > 0) {
-            // Limit the results to the top 3
-            const topResults = results.items.slice(0, 3);
-            // Format the top results
-            const formattedResults = topResults.map((item, index) => ({
-                number: index + 1,
-                link: item.link,
-                title: item.title,
-                snippet: item.snippet
-            }));
-            return formattedResults;
-        } else {
-            return { error: "No results found." };
+        if (results.error) {
+            console.error('Search failed:', results.error);
+            return { error: results.error };
         }
+
+        // Assuming the worker returns the results in the expected format
+        return results.map((item, index) => ({
+            number: index + 1,
+            link: item.link,
+            title: item.title,
+            snippet: item.snippet
+        }));
     } catch (error) {
-        console.error('Search failed:', error);
+        console.error('Error performing search:', error);
         return { error: "Search failed due to an error." };
     }
 }
@@ -135,6 +132,8 @@ async function printTextSymbolBySymbol(text) {
     }
 }
 
+let isModelInteracting = false; // Flag to control log printing
+
 async function askQuestionAnimated_with_logs(question) {
     let previousLinesCount = 2;  // Track the number of lines printed previously
 
@@ -148,8 +147,10 @@ async function askQuestionAnimated_with_logs(question) {
         updateConsoleWithMessage(data.message, question, previousLinesCount);
     });
 
+
     // Function to update console with a message
     function updateConsoleWithMessage(message, question, previousLinesCount) {
+        if (isModelInteracting) return; // Skip logging if model interaction is active
         // Move up the cursor to the start of the previous two lines
         process.stdout.write('\u001b[s');  // Save the current cursor position
         process.stdout.moveCursor(0, -previousLinesCount);
@@ -208,7 +209,7 @@ const rl = readline.createInterface({
 });
 
 const handleDocumentationSearch = async (query) => {
-    await printTextSymbolBySymbol(`Search results for documentation related to: ${query}`);
+    await printTextSymbolBySymbol(`Docs search results:`);
     console.log('');
     const search_results = await performSearch(query);
     if (search_results.error) {
@@ -363,8 +364,10 @@ async function askForMessagePrompt(chat) {
         return;
     }
     const msg = await askQuestionAnimated_with_logs('Type your prompt (or type "exit"):');
+    isModelInteracting = true; // Disable logging
     if (msg.toLowerCase() === "exit") {
         await printTextSymbolBySymbol("Exiting...");
+        isModelInteracting = false; // Re-enable logging after interaction
         rl.close();
         process.exit(0); 
     } else {
@@ -408,12 +411,13 @@ async function askForMessagePrompt(chat) {
             console.log('\n___________________________________________________________________________________'); // Indicate the end of the stream
             await printTextSymbolBySymbol('\nType your prompt (or type "exit"):'); // Indicate the end of the stream
             console.log('\n');
-            askForMessagePrompt(chat);  // Recursive call to allow continuous interaction
         } catch (error) {
             clearInterval(timerId); // Ensure to clear the timer in case of an error
             console.error('Failed to fetch response:', error);
             askForMessagePrompt(chat);  // Recursive call to allow continuous interaction
         }
+        isModelInteracting = false; // Re-enable logging after interaction
+        askForMessagePrompt(chat);  // Recursive call to allow continuous interaction
     }
 };
 
