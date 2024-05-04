@@ -255,12 +255,7 @@ const handleDocumentationSearch = async (query) => {
 
 const askForDocumentationType = async () => {
     let answer = await askQuestionAnimated('Which documentation do you need? (link or keywords): ');
-    const urlPattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-        '(([a-z\\d]([a-z\\d-]*[a-z\\d])*)' + // domain name
-        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-        '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+    const urlPattern = new RegExp('^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$', 'i');
     if (urlPattern.test(answer)) {
         await printTextSymbolBySymbol('Processing the link...');
         console.log('');
