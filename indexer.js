@@ -101,7 +101,7 @@ async function fetchDataFromWorker(url, searchType) {
         }
 
         const data = await response.json();
-        console.log('Data received from worker:');
+        // console.log('Data received from worker:');
         return data;
     } catch (error) {
         console.error('Failed to fetch data from worker:', error);
@@ -159,64 +159,73 @@ async function acceptCookies(driver) {
 }
 
 async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences) {
-    let allText; // Declare allText at the function scope
-    let wordCount;
-    let timestamp;
-    let cookieStatus = 'n/a';
-    let data_received = await fetchDataFromWorker(url, 'linkSearch');
-    let status = ''; // Declare status at the function scope
+    try {
+        let allText; // Declare allText at the function scope
+        let wordCount;
+        let timestamp;
+        let cookieStatus = 'n/a';
+        let data_received = await fetchDataFromWorker(url, 'linkSearch');
+        let status = ''; // Declare status at the function scope
 
-    if (data_received && data_received.status === 'Looks good') {
-        console.log('Data fetched successfully for URL:', url);
-        status = data_received.status; // Assign status from result
-        allText = data_received.content;
-        wordCount = data_received.word_count;
-        timestamp = data_received.indexed_timestamp;
-        // filteredText= result.filtered_content;
-        // filteredWordCount= result.filtered_word_count;
-    } else {
-        // console.log('proceeding with driver')
-        await driver.get(url);
-        let cookiesAccepted = await acceptCookies(driver);  // Capture the return value
-        allText = await driver.executeScript("return document.documentElement.innerText");
-        wordCount = countWords(allText); // Use the robust countWords function
-        timestamp = new Date().toISOString();
-        cookieStatus = cookiesAccepted ? "Accepted" : "n/a";
-        let attempt = 0;
-        const maxAttempts = 3;
-    
-        while (attempt < maxAttempts) {
-            try {
-                let linksElements = await driver.findElements(By.tagName('a'));
-                for (let link of linksElements) {
-                    let href = await link.getAttribute('href');
-                    if (typeof href === 'string' && href.startsWith(url)) {
-                        href = href.split('#')[0]; // Trim off anything after a hash
-                        if (!allLinks.has(href) && href !== url) { // Avoid saving if it's just the base URL or already saved
-                            allLinks.add(href);
+        if (data_received && data_received.status === 'Looks good') {
+            console.log('Data fetched successfully for URL:', url);
+            status = data_received.status; // Assign status from result
+            allText = data_received.content;
+            wordCount = data_received.word_count;
+            timestamp = data_received.indexed_timestamp;
+            // filteredText= result.filtered_content;
+            // filteredWordCount= result.filtered_word_count;
+        } else {
+            // console.log('proceeding with driver')
+            await driver.get(url);
+            let cookiesAccepted = await acceptCookies(driver);  // Capture the return value
+            allText = await driver.executeScript("return document.documentElement.innerText");
+            wordCount = countWords(allText); // Use the robust countWords function
+            timestamp = new Date().toISOString();
+            cookieStatus = cookiesAccepted ? "Accepted" : "n/a";
+            let attempt = 0;
+            const maxAttempts = 3;
+
+            while (attempt < maxAttempts) {
+                try {
+                    let linksElements = await driver.findElements(By.tagName('a'));
+                    for (let link of linksElements) {
+                        let href = await link.getAttribute('href');
+                        if (typeof href === 'string' && href.startsWith(url)) {
+                            href = href.split('#')[0]; // Trim off anything after a hash
+                            if (!allLinks.has(href) && href !== url) { // Avoid saving if it's just the base URL or already saved
+                                allLinks.add(href);
+                            }
                         }
                     }
-                }
-                break;
-            } catch (error) {
-                attempt++;
-                if (attempt === maxAttempts) {
-                    console.log("\nFailed to retrieve links after several attempts. Error", error);
+                    break;
+                } catch (error) {
+                    attempt++;
+                    if (attempt === maxAttempts) {
+                        console.log("\nFailed to retrieve links after several attempts. Error", error);
+                    }
                 }
             }
+            if (allText.length < 100) {
+                status = 'Seems like it failed';
+            } else {
+                status = 'Looks good';
+            }
         }
-        if (allText.length < 100) {
-            status = 'Seems like it failed';
+        eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });
+        allTexts.push(allText); // Collect all texts for line occurrence counting
+        let lineCounts = countLineOccurrences(allTexts);
+        let filteredText = filterLines(allText, lineCounts, maxOccurrences); // Filter lines based on occurrences
+        let filteredWordCount = countWords(filteredText);
+        return { allLinks, allText, filteredText, status, wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
+    } catch (error) {
+        if (error.name === 'WebDriverError' && error.message.includes('net::ERR_NAME_NOT_RESOLVED')) {
+            console.error(`The URL ${url} could not be resolved. It may be incorrect or the domain may be unreachable.`);
         } else {
-            status = 'Looks good';
+            console.error(`Error indexing ${url}:`, error);
         }
+        return null; // Return null or appropriate error response
     }
-    eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed`});
-    allTexts.push(allText); // Collect all texts for line occurrence counting
-    let lineCounts = countLineOccurrences(allTexts);
-    let filteredText = filterLines(allText, lineCounts, maxOccurrences); // Filter lines based on occurrences
-    let filteredWordCount = countWords(filteredText);
-    return { allLinks, allText, filteredText, status, wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
 }
 
 export async function main(baseUrl) {

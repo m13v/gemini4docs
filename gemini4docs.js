@@ -74,18 +74,20 @@ const countTokensForText = async (text) => {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
     const { totalTokens } = await model.countTokens(text);
     eventEmitter.emit('docsUpdated', { message: `Tokens loaded: ${totalTokens}`});
+
+    if (totalTokens > 950000) {
+        const reductionFactor = 950000 / totalTokens;
+        const newLength = Math.floor(text.length * reductionFactor);
+        text = text.substring(0, newLength);
+        // Optionally recount tokens if necessary or just return the new text length
+        const { totalTokens: adjustedTokens } = await model.countTokens(text);
+        eventEmitter.emit('docsUpdated', { message: `Tokens reduced to: ${adjustedTokens}`});
+        return adjustedTokens; // or return text if you need the modified text
+    }
+
     return totalTokens;
 };
 
-let isPrinting = false;
-function clearConsoleSafely() {
-    if (!isPrinting) {
-        return;
-    } else {
-        // Wait for a short period and then try to clear the console again
-        setTimeout(clearConsoleSafely, 100); // Check again after 100 milliseconds
-    }
-}
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -252,9 +254,9 @@ const handleDocumentationSearch = async (query) => {
 };
 
 const askForDocumentationType = async () => {
-    const answer = await askQuestionAnimated('Which documentation do you need? (link or keywords): ');
+    let answer = await askQuestionAnimated('Which documentation do you need? (link or keywords): ');
     const urlPattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name and extension
+        '(([a-z\\d]([a-z\\d-]*[a-z\\d])*)' + // domain name
         '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
         '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
         '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
@@ -262,6 +264,9 @@ const askForDocumentationType = async () => {
     if (urlPattern.test(answer)) {
         await printTextSymbolBySymbol('Processing the link...');
         console.log('');
+        if (!answer.startsWith('http://') && !answer.startsWith('https://')) {
+            answer = 'https://' + answer; // Default to https if no protocol is specified
+        }
         callIndexer(answer);
         generateResponseFromLink(answer); 
     } else {
@@ -274,7 +279,7 @@ async function generateResponseFromLink(url) {
     try {
         await printTextSymbolBySymbol(`Reading docs`);
         console.log('');
-        loadAndStartChat(url); 
+        await delayWithFeedback(3000);
     } catch (error) {
         console.error('Error generating response from link:', error);
         rl.close(); // Ensure readline interface is closed on error
