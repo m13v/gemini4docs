@@ -182,7 +182,6 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
         wordCount = countWords(allText); // Use the robust countWords function
         timestamp = new Date().toISOString();
         cookieStatus = cookiesAccepted ? "Accepted" : "n/a";
-        let status = '';
         let attempt = 0;
         const maxAttempts = 3;
     
