@@ -1,38 +1,113 @@
 import { Builder, By, Key, until } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { EventEmitter } from 'events';
 const indexerEvents = new EventEmitter();
 import eventEmitter from './eventEmitter.js';  
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 async function loadExistingData(baseUrl) {
-    const sanitizedFilename = baseUrl.replace(/\W+/g, '_') + '.json';
-    const filePath = path.join(__dirname, sanitizedFilename);
-
-    if (fs.existsSync(filePath)) {
-        const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    let data_received = await fetchDataFromWorker(baseUrl, 'baseUrlSearch');
+    if (data_received) {
+        // console.log(`Data received from worker for ${baseUrl}:`);  // Log the data received
+        let data = {
+            baseUrl: baseUrl,
+            data_received: data_received
+        };
+        eventEmitter.emit('dataSaved', { data });
         return {
-            todoLinks: new Map(Object.entries(data.links)),
-            allLinks: new Set(Object.keys(data.links)),
-            totalWords: data.total_words,
-            filteredTotalWords: data.filtered_total_words,
-            filename: filePath  // Return the file path as well
+            links: new Map(Object.entries(data_received.links)),
+            allLinks: new Set(Object.keys(data_received.links)),
+            totalWords: data_received.totalWords,
+            filteredTotalWords: data_received.filteredTotalWords
         };
     } else {
-        return { filename: filePath };  // Return only the file path if no data exists
+        // console.log(`No data or links found for ${baseUrl}.`);
+        return {
+            links: new Map(),
+            allLinks: new Set(),
+            totalWords: 0,
+            filteredTotalWords: 0
+        };
     }
 }
 
-async function saveTodoLinks(todoLinks, filename, totalWords, totalLinks, filteredTotalWords) {
-    const sanitizedFilename = filename.replace(/\W+/g, '_') + '.json';
-    const fullPath = path.join(__dirname, sanitizedFilename);  // Use __dirname to ensure the path is absolute
-    fs.writeFileSync(fullPath, JSON.stringify({ total_words: totalWords, total_links: totalLinks, filtered_total_words: filteredTotalWords, links: todoLinks }, null, 4), 'utf-8');
-    return sanitizedFilename;
+async function saveLinks(links, baseUrl, totalWords, totalLinks, filteredTotalWords) {
+    saveData(links, baseUrl, totalWords, totalLinks, filteredTotalWords);
+    await saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWords, links);
+    return
+}
+
+function saveData(links, baseUrl, totalWords, totalLinks, filteredTotalWords) {
+    let data_corpus = {
+        totalWords: totalWords,
+        totalLinks: totalLinks,
+        filteredTotalWords: filteredTotalWords,
+        links: links
+    };
+    let data = {
+        baseUrl: baseUrl,
+        data_received: data_corpus
+    };
+    eventEmitter.emit('dataSaved', { data });
+}
+
+const workerUrl = 'https://worker-aged-night-839d.i-f9f.workers.dev';
+
+async function saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWords, links) {
+    try {
+        const data = {
+            type: 'indexData',
+            baseUrl: baseUrl,
+            totalWords: totalWords,
+            totalLinks: totalLinks,
+            filteredTotalWords: filteredTotalWords,
+            links: links  // Ensure this is correctly structured for serialization
+        };
+        const response = await fetch(workerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+    } catch (error) {
+        console.error('Failed to send data to worker:', error);
+    }
+}
+
+async function fetchDataFromWorker(url, searchType) {
+    try {
+        const response = await fetch(workerUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: searchType, url: url })
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+
+            if (response.status === 404) {
+                // console.log(`No data found for URL: ${url}`);
+                return null; // Return null for 404 Not Found
+            } else if (response.status === 422) {
+                // Handle the 422 Unprocessable Entity status
+                const errorData = JSON.parse(errorBody);
+                // console.log(`Data found but not suitable for URL: ${url}, Status: ${errorData.status}`);
+                return errorData; // Return the error data for further handling
+            }
+
+            console.error(`HTTP error! status: ${response.status} ${response.statusText}`);
+            console.error(`Error response body: ${errorBody}`);
+            // For other error statuses, you might still want to throw an error
+            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Data received from worker:');
+        return data;
+    } catch (error) {
+        console.error('Failed to fetch data from worker:', error);
+        // Instead of re-throwing the error, handle it gracefully
+        return { error: true, message: error.message };
+    }
 }
 
 function countWords(text) {
@@ -84,60 +159,74 @@ async function acceptCookies(driver) {
 }
 
 async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences) {
-    await driver.get(url);
-    let cookiesAccepted = await acceptCookies(driver);  // Capture the return value
-    let allText = await driver.executeScript("return document.documentElement.innerText");
+    let allText; // Declare allText at the function scope
+    let wordCount;
+    let timestamp;
+    let cookieStatus = 'n/a';
+    let data_received = await fetchDataFromWorker(url, 'linkSearch');
+    let status = ''; // Declare status at the function scope
+
+    if (data_received && data_received.status === 'Looks good') {
+        console.log('Data fetched successfully for URL:', url);
+        status = data_received.status; // Assign status from result
+        allText = data_received.content;
+        wordCount = data_received.word_count;
+        timestamp = data_received.indexed_timestamp;
+        // filteredText= result.filtered_content;
+        // filteredWordCount= result.filtered_word_count;
+    } else {
+        // console.log('proceeding with driver')
+        await driver.get(url);
+        let cookiesAccepted = await acceptCookies(driver);  // Capture the return value
+        allText = await driver.executeScript("return document.documentElement.innerText");
+        wordCount = countWords(allText); // Use the robust countWords function
+        timestamp = new Date().toISOString();
+        cookieStatus = cookiesAccepted ? "Accepted" : "n/a";
+        let status = '';
+        let attempt = 0;
+        const maxAttempts = 3;
+    
+        while (attempt < maxAttempts) {
+            try {
+                let linksElements = await driver.findElements(By.tagName('a'));
+                for (let link of linksElements) {
+                    let href = await link.getAttribute('href');
+                    if (typeof href === 'string' && href.startsWith(url)) {
+                        href = href.split('#')[0]; // Trim off anything after a hash
+                        if (!allLinks.has(href) && href !== url) { // Avoid saving if it's just the base URL or already saved
+                            allLinks.add(href);
+                        }
+                    }
+                }
+                break;
+            } catch (error) {
+                attempt++;
+                if (attempt === maxAttempts) {
+                    console.log("\nFailed to retrieve links after several attempts. Error", error);
+                }
+            }
+        }
+        if (allText.length < 100) {
+            status = 'Seems like it failed';
+        } else {
+            status = 'Looks good';
+        }
+    }
+    eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed`});
     allTexts.push(allText); // Collect all texts for line occurrence counting
     let lineCounts = countLineOccurrences(allTexts);
     let filteredText = filterLines(allText, lineCounts, maxOccurrences); // Filter lines based on occurrences
     let filteredWordCount = countWords(filteredText);
-    let wordCount = countWords(allText); // Use the robust countWords function
-    let attempt = 0;
-    const maxAttempts = 3;
-    let status = '';
-    let cookieStatus = cookiesAccepted ? "Accepted" : "n/a";
-    let lastWord = "";  // Initialize lastWord to ensure it's always defined
-    let timestamp = new Date().toISOString();
-
-    while (attempt < maxAttempts) {
-        try {
-            let linksElements = await driver.findElements(By.tagName('a'));
-            for (let link of linksElements) {
-                let href = await link.getAttribute('href');
-                if (href && href.startsWith(url)) {
-                    if (!allLinks.has(href)) {
-                        allLinks.add(href);
-                        let urlParts = href.split('/');
-                        let lastPart = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2]; // Handle trailing slash
-                        let lastWord = lastPart.split('-').pop().split('?')[0]; // Handle hyphens and parameters
-                        eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${lastWord}, Words added: ${filteredWordCount}. Cookies: ${cookieStatus}`});
-                    }
-                }
-            }
-            break;
-        } catch (error) {
-            attempt++;
-            if (attempt === maxAttempts) {
-                console.log("\nFailed to retrieve links after several attempts. Error", error);
-            }
-        }
-    }
-    if (allText.length < 100) {
-        status = 'Seems like it failed';
-    } else {
-        status = 'Looks good';
-    }
-    return { allLinks, allText, filteredText, status, wordCount, filteredWordCount, totalWords, lastWord, cookieStatus, timestamp };
+    return { allLinks, allText, filteredText, status, wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
 }
-
 
 export async function main(baseUrl) {
     let driver = buildDriver();
     const maxOccurrences = 1;
-    let { todoLinks, allLinks, totalWords, filteredTotalWords, filename } = await loadExistingData(baseUrl);
+    let { links, allLinks, totalWords, filteredTotalWords} = await loadExistingData(baseUrl);
 
-    if (!todoLinks) {
-        todoLinks = new Map([[baseUrl, { status: "not_indexed", word_count: 0 }]]);
+    if (!links || links.size === 0) {
+        links = new Map([[baseUrl, { status: "not_indexed", word_count: 0 }]]);
         allLinks = new Set();
         totalWords = 0;
         filteredTotalWords = 0;
@@ -147,31 +236,34 @@ export async function main(baseUrl) {
     let doneLinksCount = 0;
 
     try {
-        while (Array.from(todoLinks.values()).some(v => v.status === "not_indexed")) {
-            for (let [url, info] of todoLinks) {
+        while (Array.from(links.values()).some(v => v.status === "not_indexed")) {
+            for (let [url, info] of links) {
                 if (info.status === "not_indexed") {
                     let result = await indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences);
                     if (!result) {
                         console.error('No result returned from indexLink for URL:', url);
                         continue;
                     }
+
                     allLinks = result.allLinks;
-                    totalWords += result.wordCount; 
-                    filteredTotalWords += result.filteredWordCount; 
+                    totalWords += result.wordCount;
+                    filteredTotalWords += result.filteredWordCount;
                     doneLinksCount++;
-                    eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links processed, Total words: ${totalWords}, Filtered: ${filteredTotalWords}, - Last link: /${result.lastWord}, Words added: ${result.filteredWordCount}. Cookies: ${result.cookieStatus}`});
+                    eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });
+
                     if (result.status === 'Seems like it failed') {
                         console.log(`Failed to index ${url}. Exiting...`);
                         console.log(`Content: ${result.allText}`);
                         return;
                     }
+
                     for (let link of allLinks) {
-                        if (!todoLinks.has(link)) {
-                            todoLinks.set(link, { status: "not_indexed", word_count: 0, filtered_word_count: 0, filtered_content: "", added_timestamp: result.timestamp });
+                        if (!links.has(link)) {
+                            links.set(link, { status: "not_indexed", word_count: 0, filtered_word_count: 0, filtered_content: "", added_timestamp: result.timestamp });
                         }
                     }
-                    todoLinks.set(url, { status: result.status, indexed_timestamp: result.timestamp, content: result.allText, word_count: result.wordCount, filtered_content: result.filteredText, filtered_word_count: result.filteredWordCount });
-                    filename = await saveTodoLinks(Object.fromEntries(todoLinks), baseUrl, totalWords, allLinks.size, filteredTotalWords);
+                    links.set(url, { status: result.status, indexed_timestamp: result.timestamp, content: result.allText, word_count: result.wordCount, filtered_content: result.filteredText, filtered_word_count: result.filteredWordCount });
+                    await saveLinks(Object.fromEntries(links), baseUrl, totalWords, allLinks.size, filteredTotalWords);
                 }
             }
         }
@@ -179,6 +271,6 @@ export async function main(baseUrl) {
     } finally {
         await driver.quit();
     }
-    return filename;
+    return
 }
 
