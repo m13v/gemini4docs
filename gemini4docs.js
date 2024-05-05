@@ -304,19 +304,10 @@ async function loadAndStartChat(url) {
         await countTokensForText(content);
         if (!isModelInteracting) {
             startChatSession(content);
-
             process.stdout.write('\u001b[s');  // Save the current cursor position
-            process.stdout.moveCursor(0, -1);
-
-            // Clear the previous line
-            process.stdout.clearLine(0);  // Clear the current line
-            process.stdout.cursorTo(0);   // Move cursor to the start of the line
-
-            // Prepare the log message and calculate how many lines it will occupy
             console.log('Chat is reloaded with updated context');  // This adds a newline automatically
-
             process.stdout.write('\u001b[u'); 
-
+        }
     } catch (error) {
         console.error('Error loading or starting chat:', error);
     }
