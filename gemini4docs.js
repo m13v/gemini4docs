@@ -164,17 +164,17 @@ async function askQuestionAnimated_with_logs(question) {
         const logMessage = `${message} | ${question}`;
         const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
 
-        // process.stdout.write('\u001b[s');  // Save the current cursor position
-        // process.stdout.moveCursor(0, -previousLinesCount);
+        process.stdout.write('\u001b[s');  // Save the current cursor position
+        process.stdout.moveCursor(0, -previousLinesCount);
 
-        // // Clear the previous line
-        // process.stdout.clearLine(0);  // Clear the current line
-        // process.stdout.cursorTo(0);   // Move cursor to the start of the line
+        // Clear the previous line
+        process.stdout.clearLine(0);  // Clear the current line
+        process.stdout.cursorTo(0);   // Move cursor to the start of the line
 
-        // // Prepare the log message and calculate how many lines it will occupy
-        // console.log(logMessage);  // This adds a newline automatically
+        // Prepare the log message and calculate how many lines it will occupy
+        console.log(logMessage);  // This adds a newline automatically
 
-        // process.stdout.write('\u001b[u');  // Restore the saved cursor position
+        process.stdout.write('\u001b[u');  // Restore the saved cursor position
         // Update the count of lines currently printed to the console
         previousLinesCount = logLines;
     }
@@ -349,8 +349,8 @@ async function askForMessagePrompt(chat) {
         return;
     }
     // console.log('_____________________'); // Indicate the end of the stream
+    console.log('\n');
     console.log('Type your prompt (or type "exit"):'); // Indicate the end of the stream
-    // console.log('\n');
     const msg = await askQuestionAnimated_with_logs('Type your prompt (or type "exit"):');
     isModelInteracting = true; // Disable logging
     if (msg.toLowerCase() === "exit") {
