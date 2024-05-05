@@ -314,7 +314,7 @@ async function loadAndStartChat(url) {
         // Prepare the log message and calculate how many lines it will occupy
         console.log('Chat is reloaded with updated context');  // This adds a newline automatically
 
-        process.stdout.write('\u001b[u'); ff
+        process.stdout.write('\u001b[u'); 
 
     } catch (error) {
         console.error('Error loading or starting chat:', error);
