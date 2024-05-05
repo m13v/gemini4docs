@@ -73,7 +73,7 @@ async function performSearch(query) {
 const countTokensForText = async (text) => {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
     const { totalTokens } = await model.countTokens(text);
-    eventEmitter.emit('docsUpdated', { message: `Tokens loaded: ${totalTokens}`});
+    // eventEmitter.emit('docsUpdated', { message: `Tokens loaded: ${totalTokens}`});
 
     if (totalTokens > 950000) {
         const reductionFactor = 950000 / totalTokens;
@@ -99,7 +99,7 @@ function delayWithFeedback(ms) {
             process.stdout.clearLine(0);
             process.stdout.cursorTo(0);
             let elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
-            process.stdout.write(`Loading... [${elapsedTime.toFixed(1)}s / ${(ms / 1000).toFixed(1)}s]`);
+            process.stdout.write(`Loading... [${elapsedTime.toFixed(1)}s]`);
         }, 100); // Update every 100 milliseconds
 
         setTimeout(() => {
@@ -143,7 +143,10 @@ let isModelInteracting = false; // Flag to control log printing
 eventEmitter.setMaxListeners(20);
 
 async function askQuestionAnimated_with_logs(question) {
-    let previousLinesCount = 2;  // Track the number of lines printed previously
+    let previousLinesCount = 1;  // Track the number of lines printed previously
+    eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
+    eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
+
     // Listener for data received events
     eventEmitter.once('data_received', (data) => {
         updateConsoleWithMessage(data.message, question, previousLinesCount);
@@ -154,38 +157,26 @@ async function askQuestionAnimated_with_logs(question) {
         updateConsoleWithMessage(data.message, question, previousLinesCount);
     });
 
-
     // Function to update console with a message
     function updateConsoleWithMessage(message, question, previousLinesCount) {
         if (isModelInteracting) return; // Skip logging if model interaction is active
-        // Move up the cursor to the start of the previous two lines
-        process.stdout.write('\u001b[s');  // Save the current cursor position
-        process.stdout.moveCursor(0, -previousLinesCount);
-
-        // Clear the previous two lines
-        for (let i = 0; i < previousLinesCount; i++) {
-            process.stdout.clearLine(0);  // Clear the current line
-            process.stdout.cursorTo(0);   // Move cursor to the start of the line
-            if (i < previousLinesCount - 1) {
-                process.stdout.moveCursor(0, 1);  // Move down to the next line
-            }
-        }
-
-        // Move cursor back to the start of the first cleared line
-        process.stdout.moveCursor(0, -(previousLinesCount - 1));
-
-        // Prepare the log message and calculate how many lines it will occupy
-        const logMessage = `${message}`;
+        // Move up the cursor to the start of the previous line
+        const logMessage = `${message} | ${question}`;
         const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
-        console.log(logMessage);  // This adds a newline automatically
 
-        // Print the question and calculate lines
-        const questionLines = Math.ceil((question.length + 1) / process.stdout.columns);
-        console.log(question);  // This adds a newline automatically
+        // process.stdout.write('\u001b[s');  // Save the current cursor position
+        // process.stdout.moveCursor(0, -previousLinesCount);
 
-        process.stdout.write('\u001b[u');  // Restore the saved cursor position
+        // // Clear the previous line
+        // process.stdout.clearLine(0);  // Clear the current line
+        // process.stdout.cursorTo(0);   // Move cursor to the start of the line
+
+        // // Prepare the log message and calculate how many lines it will occupy
+        // console.log(logMessage);  // This adds a newline automatically
+
+        // process.stdout.write('\u001b[u');  // Restore the saved cursor position
         // Update the count of lines currently printed to the console
-        previousLinesCount = logLines + questionLines;
+        previousLinesCount = logLines;
     }
 
     return new Promise((resolve) => {
@@ -286,7 +277,7 @@ async function loadAndStartChat(url) {
         let allData;  // Declare allData at the function scope
         try {
             allData = await getDataWithRetry(url);  // Assign the data retrieved
-            console.log("Data loaded, words:", allData.filteredTotalWords);
+            // console.log("Data loaded, words:", allData.filteredTotalWords);
             if (!allData || !allData.links) {
                 console.error('links are undefined or not an object:', allData ? allData.links : 'allData is null');
                 return;
@@ -357,9 +348,9 @@ async function askForMessagePrompt(chat) {
         console.error('Invalid chat session object.');
         return;
     }
-    console.log('\n___________________________________________________________________________________'); // Indicate the end of the stream
-    await printTextSymbolBySymbol('\nType your prompt (or type "exit"):'); // Indicate the end of the stream
-    console.log('\n');
+    // console.log('_____________________'); // Indicate the end of the stream
+    console.log('Type your prompt (or type "exit"):'); // Indicate the end of the stream
+    // console.log('\n');
     const msg = await askQuestionAnimated_with_logs('Type your prompt (or type "exit"):');
     isModelInteracting = true; // Disable logging
     if (msg.toLowerCase() === "exit") {
@@ -368,7 +359,7 @@ async function askForMessagePrompt(chat) {
         rl.close();
         process.exit(0); 
     } else {
-        await printTextSymbolBySymbol(`Sending message to the model...`);
+        // await printTextSymbolBySymbol(`Sending message to the model...`);
         console.log('');
         const startTime = Date.now();
         let timerId = setInterval(() => {
@@ -394,17 +385,17 @@ async function askForMessagePrompt(chat) {
                 lineCount += (chunkText.match(/\n/g) || []).length + 1; // Count new lines and add one for the current line
                 if (isFirstChunk) {
                     let finalElapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
-                    await printTextSymbolBySymbol(`\nReceived first chunk after ${finalElapsedTime.toFixed(1)} seconds.`);
+                    // await printTextSymbolBySymbol(`\nReceived first chunk after ${finalElapsedTime.toFixed(1)} seconds.`);
                     await printTextSymbolBySymbol(`\nModel: `);
                     isFirstChunk = false;
                 }
                 await printTextSymbolBySymbol(chunk.text()); // Use the function to print chunk smoothly
                 text += chunk.text();
             }
+            const output = marked(text);
             process.stdout.moveCursor(0, -lineCount);
             process.stdout.clearScreenDown();
-            const output = marked(text);
-            console.log(output);
+            console.log(`Model: ${output}`);
         } catch (error) {
             clearInterval(timerId); // Ensure to clear the timer in case of an error
             console.error('Failed to fetch response:', error);

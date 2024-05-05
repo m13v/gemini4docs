@@ -243,6 +243,12 @@ export async function main(baseUrl) {
     let allTexts = [];
     let doneLinksCount = 0;
 
+    for (let [url, info] of links) {
+        if (info.status === 'Looks good') {
+            doneLinksCount++;
+        }
+    }
+
     try {
         while (Array.from(links.values()).some(v => v.status === "not_indexed")) {
             for (let [url, info] of links) {
@@ -256,7 +262,9 @@ export async function main(baseUrl) {
                     allLinks = result.allLinks;
                     totalWords += result.wordCount;
                     filteredTotalWords += result.filteredWordCount;
-                    doneLinksCount++;
+                    if (result.status === 'Looks good') {
+                        doneLinksCount++;
+                    }
                     eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });
 
                     if (result.status === 'Seems like it failed') {

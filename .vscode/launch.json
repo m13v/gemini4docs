@@ -1,0 +1,19 @@
+{
+    "version": "0.1.0",
+    "configurations": [
+      {
+        "name": "Launch Extension",
+        "type": "extensionHost",
+        "request": "launch",
+        "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
+        "outFiles": ["${workspaceRoot}/out/src/**/*.js"]
+      },
+      {
+        "name": "Launch Tests",
+        "type": "extensionHost",
+        "request": "launch",
+        "args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionTestsPath=${workspaceRoot}/out/test"],
+        "outFiles": ["${workspaceRoot}/out/test/**/*.js"]
+      }
+    ]
+  }
