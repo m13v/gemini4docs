@@ -3,6 +3,7 @@ import chrome from 'selenium-webdriver/chrome.js';
 import { EventEmitter } from 'events';
 const indexerEvents = new EventEmitter();
 import eventEmitter from './eventEmitter.js';  
+import { fetchGitHubContent } from './fetchGitHubContent.js';
 
 async function loadExistingData(baseUrl) {
     let data_received = await fetchDataFromWorker(baseUrl, 'baseUrlSearch');
@@ -166,6 +167,7 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
         let cookieStatus = 'n/a';
         let data_received = await fetchDataFromWorker(url, 'linkSearch');
         let status = ''; // Declare status at the function scope
+        let extraData = null;
 
         if (data_received && data_received.status === 'Looks good') {
             console.log('Data fetched successfully for URL:', url);
@@ -210,6 +212,15 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
                 status = 'Seems like it failed';
             } else {
                 status = 'Looks good';
+            }
+        }
+        if (url.includes('github.com')) {
+            try {
+                // Fetch extra data from GitHub using the fetchGitHubContent function
+                extraData = await fetchGitHubContent(url);
+                allText = allText + '\n\n' + extraData;
+            } catch (error) {
+                console.error(`Error fetching extra data for ${url}:`, error);
             }
         }
         eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });

@@ -1,0 +1,21 @@
+{
+    "name": "your-extension-name",
+    "displayName": "Your Extension Name",
+    "description": "Your extension description",
+    "version": "0.0.1",
+    "engines": {
+      "vscode": "^1.x.x"
+    },
+    "activationEvents": [
+      "onCommand:myExtension.openWithLiveServer"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+      "commands": [
+        {
+          "command": "myExtension.openWithLiveServer",
+          "title": "Test Live Server"
+        }
+      ]
+    }
+  }
