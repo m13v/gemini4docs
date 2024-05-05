@@ -273,7 +273,6 @@ async function generateResponseFromLink(url) {
 }
 
 async function loadAndStartChat(url) {
-    process.stdout.write('\u001b[u'); 
     try {
         let allData;  // Declare allData at the function scope
         try {
@@ -317,7 +316,7 @@ async function loadAndStartChat(url) {
             console.log('Chat is reloaded with updated context');  // This adds a newline automatically
 
             process.stdout.write('\u001b[u'); 
-        }
+
     } catch (error) {
         console.error('Error loading or starting chat:', error);
     }
