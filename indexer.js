@@ -170,7 +170,7 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
         let extraData = null;
 
         if (data_received && data_received.status === 'Looks good') {
-            console.log('Data fetched successfully for URL:', url);
+            // console.log('Data fetched successfully for URL:', url);
             status = data_received.status; // Assign status from result
             allText = data_received.content;
             wordCount = data_received.word_count;
