@@ -193,10 +193,13 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
                     let linksElements = await driver.findElements(By.tagName('a'));
                     for (let link of linksElements) {
                         let href = await link.getAttribute('href');
-                        if (typeof href === 'string' && href.startsWith(url)) {
-                            href = href.split('#')[0]; // Trim off anything after a hash
-                            if (!allLinks.has(href) && href !== url) { // Avoid saving if it's just the base URL or already saved
-                                allLinks.add(href);
+                        if (href) {
+                            let linkUrl = new URL(href, url); // Resolve relative URLs and ensure absolute URL
+                            if (linkUrl.origin === new URL(url).origin) { // Check if the link belongs to the same domain
+                                href = linkUrl.href.split('#')[0]; // Normalize and remove any fragment
+                                if (!allLinks.has(href)) {
+                                    allLinks.add(href);
+                                }
                             }
                         }
                     }

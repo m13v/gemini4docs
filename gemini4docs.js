@@ -141,8 +141,13 @@ eventEmitter.on('dataSaved', ({ data }) => {
 
 let isModelInteracting = false; // Flag to control log printing
 eventEmitter.setMaxListeners(20);
+let isWaitingForInput = false;
 
 async function askQuestionAnimated_with_logs(question) {
+    while (isWaitingForInput) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds before checking again
+    }
+
     let previousLinesCount = 1;  // Track the number of lines printed previously
     eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
     eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
@@ -179,17 +184,18 @@ async function askQuestionAnimated_with_logs(question) {
         previousLinesCount = logLines;
     }
 
+    isWaitingForInput = true;
     return new Promise((resolve) => {
         const readlineCallback = (answer) => {
             eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
             eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
+            isWaitingForInput = false;
             resolve(answer);
         };
-        rl.question('', readlineCallback);
+        rl.question('You: ', readlineCallback);
     });
 }
 
-// Example of using printTextSymbolBySymbol with rl.question
 async function askQuestionAnimated(question) {
     await printTextSymbolBySymbol(question);
     return new Promise((resolve) => {
@@ -321,10 +327,8 @@ async function getDataWithRetry(url, retries = 5) {
     while (attempt <= retries) {
         const data = dataMap.get(url);
         if (data) {
-            // console.log("Data found for URL:", url);
             return data.data_received;
         } else {
-            // console.log(`Data not found for ${url}, retrying... Attempt ${attempt}`);
             await delayWithFeedback(3000); // Wait for 3 seconds before retrying
             attempt++;
         }
