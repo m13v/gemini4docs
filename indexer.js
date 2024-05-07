@@ -235,10 +235,18 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
     } catch (error) {
         if (error.name === 'WebDriverError' && error.message.includes('net::ERR_NAME_NOT_RESOLVED')) {
             console.error(`The URL ${url} could not be resolved. It may be incorrect or the domain may be unreachable.`);
+            attempt++;  // Increment the attempt counter
+            if (attempt < maxAttempts) {
+                driver = await buildDriver(); // Reinitialize the driver
+                return indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences); // Retry the operation
+            } else {
+                console.error("Maximum retry attempts reached, skipping URL:", url);
+                return null; // Return null after max attempts
+            }
         } else {
             console.error(`Error indexing ${url}:`, error);
+            return null; // Return null or appropriate error response
         }
-        return null; // Return null or appropriate error response
     }
 }
 
