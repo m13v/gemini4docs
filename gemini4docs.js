@@ -92,10 +92,14 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+let activeDelayControl = null;
+
 function delayWithFeedback(ms) {
-    return new Promise(resolve => {
+    let timerId, resolvePromise;
+    const promise = new Promise(resolve => {
+        resolvePromise = resolve;
         const startTime = Date.now();
-        let timerId = setInterval(() => {
+        timerId = setInterval(() => {
             process.stdout.clearLine(0);
             process.stdout.cursorTo(0);
             let elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
@@ -109,6 +113,17 @@ function delayWithFeedback(ms) {
             resolve();
         }, ms);
     });
+
+    activeDelayControl = {
+        stop: () => {
+            clearInterval(timerId);
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+            resolvePromise();
+        }
+    };
+
+    return promise;
 }
 
 async function printTextSymbolBySymbol(text) {
@@ -127,8 +142,15 @@ async function printTextSymbolBySymbol(text) {
 let dataMap = new Map();
 let debounceTimer;
 
+eventEmitter.on('indexingFailed', ({ data }) => {
+    if (activeDelayControl) {
+        activeDelayControl.stop();
+    }
+    console.log(`\x1b[31mIndexing failed for ${data.baseUrl}. Returning to documentation type selection.\x1b[0m`);
+    askForDocumentationType();
+});
+
 eventEmitter.on('dataSaved', ({ data }) => {
-    // console.log(`Data updated for ${data.baseUrl}:`);
     dataMap.set(data.baseUrl, data);
     if (debounceTimer) {
         clearTimeout(debounceTimer);
@@ -144,21 +166,18 @@ eventEmitter.setMaxListeners(20);
 let isWaitingForInput = false;
 
 async function askQuestionAnimated_with_logs(question) {
-    while (isWaitingForInput) {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds before checking again
-    }
 
     let previousLinesCount = 1;  // Track the number of lines printed previously
     eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
     eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
 
     // Listener for data received events
-    eventEmitter.once('data_received', (data) => {
+    eventEmitter.on('data_received', (data) => {
         updateConsoleWithMessage(data.message, question, previousLinesCount);
     });
 
     // Listener for documentation updates
-    eventEmitter.once('docsUpdated', (data) => {
+    eventEmitter.on('docsUpdated', (data) => {
         updateConsoleWithMessage(data.message, question, previousLinesCount);
     });
 
@@ -182,6 +201,10 @@ async function askQuestionAnimated_with_logs(question) {
         process.stdout.write('\u001b[u');  // Restore the saved cursor position
         // Update the count of lines currently printed to the console
         previousLinesCount = logLines;
+    }
+
+    while (isWaitingForInput) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds before checking again
     }
 
     isWaitingForInput = true;
@@ -252,6 +275,7 @@ const handleDocumentationSearch = async (query) => {
 
 const askForDocumentationType = async () => {
     let answer = await askQuestionAnimated('Which documentation do you need? (link or keywords): ');
+    answer = answer.trim().toLowerCase(); // Trim and convert to lowercase to standardize the input
     const urlPattern = new RegExp('^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$', 'i');
     if (urlPattern.test(answer)) {
         await printTextSymbolBySymbol('Processing the link...');
@@ -271,7 +295,7 @@ async function generateResponseFromLink(url) {
     try {
         await printTextSymbolBySymbol(`Reading docs`);
         console.log('');
-        await delayWithFeedback(3000);
+        delayWithFeedback(60000);
     } catch (error) {
         console.error('Error generating response from link:', error);
         rl.close(); // Ensure readline interface is closed on error
@@ -308,6 +332,9 @@ async function loadAndStartChat(url) {
 
         let content = allContent.join('\n');
         await countTokensForText(content);
+        if (activeDelayControl) {
+            activeDelayControl.stop();
+        }
         if (!isModelInteracting) {
             startChatSession(content);
             process.stdout.write('\u001b[s');  // Save the current cursor position

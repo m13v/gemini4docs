@@ -33,7 +33,10 @@ async function loadExistingData(baseUrl) {
 
 async function saveLinks(links, baseUrl, totalWords, totalLinks, filteredTotalWords) {
     saveData(links, baseUrl, totalWords, totalLinks, filteredTotalWords);
-    await saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWords, links);
+    saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWords, links)
+        .catch(error => {
+            console.error('Failed to save data to worker asynchronously:', error);
+        });
     return
 }
 
@@ -54,6 +57,7 @@ function saveData(links, baseUrl, totalWords, totalLinks, filteredTotalWords) {
 const workerUrl = 'https://worker-aged-night-839d.i-f9f.workers.dev';
 
 async function saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWords, links) {
+    // console.log('Saving data to worker');
     try {
         const data = {
             type: 'indexData',
@@ -69,6 +73,7 @@ async function saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWo
             body: JSON.stringify(data)
         });
         const result = await response.json();
+        // console.log('result: ',result);
     } catch (error) {
         console.error('Failed to send data to worker:', error);
     }
@@ -250,6 +255,8 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
     }
 }
 
+const MAX_WORDS = 1000000; // Limit of 1 million words
+
 export async function main(baseUrl) {
     let driver = buildDriver();
     const maxOccurrences = 1;
@@ -275,6 +282,7 @@ export async function main(baseUrl) {
         while (Array.from(links.values()).some(v => v.status === "not_indexed")) {
             for (let [url, info] of links) {
                 if (info.status === "not_indexed") {
+
                     let result = await indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences);
                     if (!result) {
                         console.error('No result returned from indexLink for URL:', url);
@@ -288,10 +296,15 @@ export async function main(baseUrl) {
                         doneLinksCount++;
                     }
                     eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });
+                    // console.log('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });
 
                     if (result.status === 'Seems like it failed') {
                         console.log(`Failed to index ${url}. Exiting...`);
                         console.log(`Content: ${result.allText}`);
+                        if (url === baseUrl) { 
+                            let data = {baseUrl: baseUrl};
+                            eventEmitter.emit('indexingFailed', { data });
+                        }
                         return;
                     }
 
