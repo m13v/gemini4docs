@@ -150,7 +150,7 @@ eventEmitter.on('indexingFailed', ({ data }) => {
     askForDocumentationType();
 });
 
-eventEmitter.on('dataSaved', ({ data }) => {
+eventEmitter.on('dataSaved', async ({ data }) => {  // Add async here
     dataMap.set(data.baseUrl, data);
     if (debounceTimer) {
         clearTimeout(debounceTimer);
@@ -164,12 +164,13 @@ eventEmitter.on('dataSaved', ({ data }) => {
 let isModelInteracting = false; // Flag to control log printing
 eventEmitter.setMaxListeners(20);
 let isWaitingForInput = false;
+let logCounter = 0;
 
 async function askQuestionAnimated_with_logs(question) {
 
     let previousLinesCount = 1;  // Track the number of lines printed previously
-    eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
-    eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
+    // eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
+    // eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
 
     // Listener for data received events
     eventEmitter.on('data_received', (data) => {
@@ -203,11 +204,14 @@ async function askQuestionAnimated_with_logs(question) {
         previousLinesCount = logLines;
     }
 
-    while (isWaitingForInput) {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds before checking again
-    }
 
+
+    // while (!isWaitingForInput) {
+    //     // console.log('new promise timeout')
+    //     await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds before checking again
+    // }
     isWaitingForInput = true;
+
     return new Promise((resolve) => {
         const readlineCallback = (answer) => {
             eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
@@ -303,6 +307,7 @@ async function generateResponseFromLink(url) {
 }
 
 async function loadAndStartChat(url) {
+    let previousLinesCount = 1; 
     try {
         let allData;  // Declare allData at the function scope
         try {
@@ -335,14 +340,26 @@ async function loadAndStartChat(url) {
         if (activeDelayControl) {
             activeDelayControl.stop();
         }
+    
         if (!isModelInteracting) {
             startChatSession(content);
+    
+            const logMessage = 'Chat is reloaded with updated context';
+            const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
+    
             process.stdout.write('\u001b[s');  // Save the current cursor position
-            process.stdout.moveCursor(0, -1);
+            process.stdout.moveCursor(0, -previousLinesCount);
+    
+            // Clear the previous line
             process.stdout.clearLine(0);  // Clear the current line
-            process.stdout.cursorTo(0);   // Move cursor to the start of the line    
-            console.log('Chat is reloaded with updated context');  // This adds a newline automatically
-            process.stdout.write('\u001b[u'); 
+            process.stdout.cursorTo(0);   // Move cursor to the start of the line
+    
+            // Prepare the log message and calculate how many lines it will occupy
+            console.log(logMessage);  // This adds a newline automatically
+    
+            process.stdout.write('\u001b[u');  // Restore the saved cursor position
+            // Update the count of lines currently printed to the console
+            previousLinesCount = logLines;
         }
     } catch (error) {
         console.error('Error loading or starting chat:', error);
@@ -435,6 +452,7 @@ async function askForMessagePrompt(chat) {
             process.stdout.moveCursor(0, -lineCount);
             process.stdout.clearScreenDown();
             console.log(`Model: ${output}`);
+            process.stdout.moveCursor(0, -1);
         } catch (error) {
             clearInterval(timerId); // Ensure to clear the timer in case of an error
             console.error('Failed to fetch response:', error);

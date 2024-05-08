@@ -1,25 +1,34 @@
 {
-  "name": "testext_g4d",
-  "displayName": "Your Extension Name",
-  "description": "Your extension description",
-  "version": "0.0.1",
+  "name": "simple-extension",
+  "displayName": "Simple Extension",
+  "description": "A simple VS Code extension",
+  "version": "0.1.0",
+  "publisher": "your-publisher-name",
   "engines": {
-    "vscode": "^1.x.x"
+    "vscode": "^1.50.0"
   },
+  "main": "./extension.js",
   "activationEvents": [
-    "onCommand:myExtension.openWithLiveServer",
-    "onCommand:myExtension.openFile"
+    "onCommand:simple-extension.helloWorld"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "myExtension.openWithLiveServer",
-        "title": "Open with Live Server"
+        "command": "simple-extension.helloWorld",
+        "title": "Hello World"
       },
       {
-        "command": "myExtension.openFile",
+        "command": "simple-extension.openFile",
         "title": "Open File with Live Server"
       }
     ]
+  },
+  "scripts": {
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "devDependencies": {
+    "vscode": "^1.1.36",
+    "eslint": "^7.1.0",
+    "typescript": "^4.0.3"
   }
 }

@@ -246,11 +246,11 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
                 return indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences); // Retry the operation
             } else {
                 console.error("Maximum retry attempts reached, skipping URL:", url);
-                return null; // Return null after max attempts
+                return { allLinks, allText, filteredText, status: 'Seems like it failed', wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
             }
         } else {
             console.error(`Error indexing ${url}:`, error);
-            return null; // Return null or appropriate error response
+            return { allLinks, allText, filteredText, status: 'Seems like it failed', wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
         }
     }
 }
@@ -285,7 +285,7 @@ export async function main(baseUrl) {
 
                     let result = await indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences);
                     if (!result) {
-                        console.error('No result returned from indexLink for URL:', url);
+                        // console.error('No result returned from indexLink for URL:', url);
                         continue;
                     }
 
