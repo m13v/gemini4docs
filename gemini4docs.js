@@ -444,7 +444,7 @@ async function askForMessagePrompt(chat) {
                 text += chunk.text();
             }
             const output = marked(text);
-            let updatedchat= currentChat+output;
+            let updatedchat = currentChat + "Model: " + output;
             reprintChatMessage(updatedchat);
             // process.stdout.moveCursor(0, -lineCount);
             // process.stdout.clearScreenDown();
