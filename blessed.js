@@ -41,7 +41,7 @@ const chatBox = blessed.box({
   top: '15%',
   left: 'left',
   width: '100%',
-  height: '70%',
+  height: '68%',
   content: '',
   tags: true,
   scrollable: true,
@@ -58,13 +58,7 @@ const chatBox = blessed.box({
   // mouse: true,  // Enable mouse support
   keys: true,  // Enable keyboard support for scrolling
   vi: true,  // Enable vi-like keys for scrolling
-  border: {
-    type: 'line'
-  },
   style: {
-    border: {
-      fg: 'black'
-    },
     scrollbar: {
       bg: 'white'
     }
@@ -76,7 +70,7 @@ const inputTitle = blessed.box({
   left: 'left',
   width: '100%',
   height: '5%',
-  content: '(Press escape twice to exit) (Use arrow buttons "up" and "down" to scroll):',
+  content: '(Press escape twice to exit) (Use mouse or arrow buttons "up" and "down" to scroll):',
   tags: true,
   style: {
     border: {
@@ -84,7 +78,8 @@ const inputTitle = blessed.box({
     },
     scrollbar: {
       bg: 'white'
-    }
+    },
+    bg: 'black'  // Set background color to black
   }
 });
 // Create an input box
@@ -103,7 +98,6 @@ const inputBox = blessed.textbox({
     }
   }
 });
-
 
 // Append boxes to the screen.
 screen.append(logBox);
