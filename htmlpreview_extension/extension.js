@@ -11,6 +11,7 @@ function activate(context) {
         // Using Live Server Preview to open the file
         vscode.commands.executeCommand('vscode.open', fileUri);
         vscode.commands.executeCommand('extension.liveServerPreview.open', fileUri);
+        vscode.commands.executeCommand('vscode.close', fileUri);
     });
 
     // // URI handler to open files with Live Server Preview from external URIs

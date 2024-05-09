@@ -2,10 +2,11 @@ import blessed from 'blessed';
 
 const screen = blessed.screen({
   smartCSR: true,
-  mouse: true,  // Enable mouse events
+  mouse: false,  // Enable mouse events
 });
 
 screen.title = 'Gemini4Docs';
+// screen.enableMouse();
 
 const logBox = blessed.box({
   top: 'top',
@@ -20,7 +21,7 @@ const logBox = blessed.box({
     ch: ' ',
     inverse: true
   },
-  mouse: true,  // Enable mouse support
+  // mouse: true,  // Enable mouse support
   keys: true,  // Enable keyboard support for scrolling
   vi: true,  // Enable vi-like keys for scrolling
   border: {
@@ -54,7 +55,7 @@ const chatBox = blessed.box({
       inverse: true  // Inverse the colors for the scrollbar
     },
   },
-  mouse: true,  // Enable mouse support
+  // mouse: true,  // Enable mouse support
   keys: true,  // Enable keyboard support for scrolling
   vi: true,  // Enable vi-like keys for scrolling
   border: {
@@ -75,7 +76,7 @@ const inputTitle = blessed.box({
   left: 'left',
   width: '100%',
   height: '5%',
-  content: '(Press escape twice to exit) (Use mouse to scroll):',
+  content: '(Press escape twice to exit) (Use arrow buttons "up" and "down" to scroll):',
   tags: true,
   style: {
     border: {
@@ -142,6 +143,34 @@ function getUserInput(prompt) {
   });
 }
 
+inputBox.key(['down'], () => {
+  // Refocus the logBox every time the down key is pressed
+  if (screen.focused !== chatBox) {
+    chatBox.focus();
+  }
+  chatBox.scroll(1);
+  screen.render();
+});
+
+// Similarly, you can ensure focus for other keys and elements
+inputBox.key(['up'], () => {
+  if (screen.focused !== chatBox) {
+    chatBox.focus();
+  }
+  chatBox.scroll(-1);
+  screen.render();
+});
+
+
+screen.key(['tab'], () => {
+  // Toggle focus between logBox and chatBox
+  if (screen.focused === logBox) {
+    chatBox.focus();
+  } else {
+    logBox.focus();
+  }
+  screen.render();
+});
 // Exiting the application
 screen.key(['escape'], (ch, key) => {
   return process.exit(0);
