@@ -106,34 +106,50 @@ screen.append(inputTitle);
 screen.append(inputBox);
 
 let currentFocusedElement;
+
+inputBox.on('focus', () => {
+  currentFocusedElement = inputBox;
+});
+
+chatBox.on('focus', () => {
+  currentFocusedElement = chatBox;
+});
+
+logBox.on('focus', () => {
+  currentFocusedElement = logBox;
+});
 // Allow input handling
+let isInputActive = false; // Flag to control the input activity
+
 function getUserInput(prompt) {
+  if (isInputActive) {
+    // Clear existing input listener and reset the input box
+    inputBox.removeListener('submit');
+  }
+
+  isInputActive = true; // Set the flag when input starts
+
   return new Promise((resolve) => {
-    // Display prompt in chatBox or directly in inputBox as placeholder
-    // inputBox.setValue('');
     inputBox.setLabel(` ${prompt} `);
 
     if (currentFocusedElement !== inputBox) {
-      inputBox.focus();  // Only focus if it's not already focused
+      inputBox.focus(); // Only focus if it's not already focused
     }
-    // Event listener for submitting the input
+
     inputBox.once('submit', (data) => {
-      // Clear the input box after submission
       inputBox.clearValue();
-      inputBox.setLabel('');  // Clear the label
+      inputBox.setLabel(''); // Clear the label
 
-      // Append new user input to existing content in chatBox
       chatBox.setContent(`${chatBox.getContent()}\nYou: ${data}\n`);
-      chatBox.setScrollPerc(100);  // Auto-scroll to the bottom
+      chatBox.setScrollPerc(100); // Auto-scroll to the bottom
 
-      // Refresh the screen to show changes
-      screen.render();
+      screen.render(); // Refresh the screen to show changes
 
-      // Resolve the promise with the input data
+      isInputActive = false; // Reset the flag when input is submitted
       resolve(data.trim());
     });
 
-    screen.render();  // Ensure the screen is updated to show the input box focused
+    screen.render(); // Ensure the screen is updated to show the input box focused
   });
 }
 

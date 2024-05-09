@@ -209,6 +209,7 @@ async function askQuestionAnimated_with_logs(question) {
 
     isWaitingForInput = true;
     const answer = await getUserInput('Your input:');
+    isWaitingForInput = false;
     return answer;
     // return new Promise((resolve) => {
     //     const readlineCallback = (answer) => {
