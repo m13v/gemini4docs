@@ -421,7 +421,7 @@ async function askForMessagePrompt(chat) {
         }, 100); // Update every 100 milliseconds (0.1 second)
 
         try {
-            const modifiedMsg = msg + ". Please provide response solely based on the provided context. Keep your answer as short as possible.";
+            const modifiedMsg = msg + ". Please provide response solely based on the provided context. Keep your answer as short as possible. Provide all source links";
             const result = await chat.sendMessageStream(modifiedMsg);
             clearInterval(timerId); // Stop the timer once the first chunk is received
             // process.stdout.clearLine(0);

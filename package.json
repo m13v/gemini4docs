@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@e2b/code-interpreter": "^0.0.4",
     "@google/generative-ai": "^0.8.0",
     "axios": "^1.6.8",
     "blessed": "^0.1.81",
