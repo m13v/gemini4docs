@@ -2,7 +2,7 @@
 import fs from 'fs/promises';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
-import readline from 'readline'; // Import the readline module
+// import readline from 'readline'; // Import the readline module
 import fetch from 'node-fetch';
 import { main as indexLink } from './indexer.js';
 import { EventEmitter } from 'events';
@@ -12,7 +12,8 @@ import chokidar from 'chokidar';
 import { marked } from 'marked';
 import TerminalRenderer from 'marked-terminal';
 import { highlight } from 'cli-highlight';
-
+import { screen, logBox, chatBox, inputBox } from './blessed.js';
+import { getUserInput, displayLogMessage, displayChatMessage, reprintChatMessage } from './blessed.js';
 
 marked.setOptions({
     renderer: new TerminalRenderer({
@@ -27,11 +28,11 @@ async function callIndexer(url) {
     try {
         indexLink(url).then(() => {
         }).catch(error => {
-            console.error('Error during indexing:', error);
+            displayLogMessage(`Error: during indexing: ${error}`);
         });
         return;
     } catch (error) {
-        console.error('Error during callindexer execution:', error);
+        displayLogMessage(`Error during callindexer execution: ${error}`);
         throw error;  // Rethrow or handle error appropriately
     }
 }
@@ -52,7 +53,7 @@ async function performSearch(query) {
         const results = await response.json();
 
         if (results.error) {
-            console.error('Search failed:', results.error);
+            displayLogMessage(`Error Search failed: ${results.error}`);
             return { error: results.error };
         }
 
@@ -64,7 +65,7 @@ async function performSearch(query) {
             snippet: item.snippet
         }));
     } catch (error) {
-        console.error('Error performing search:', error);
+        displayLogMessage(`Error  performing search: ${error}`);
         return { error: "Search failed due to an error." };
     }
 }
@@ -100,16 +101,13 @@ function delayWithFeedback(ms) {
         resolvePromise = resolve;
         const startTime = Date.now();
         timerId = setInterval(() => {
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
             let elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
-            process.stdout.write(`Loading... [${elapsedTime.toFixed(1)}s]`);
+            displayLogMessage(`Loading... [${elapsedTime.toFixed(1)}s]`); // Update log message
         }, 100); // Update every 100 milliseconds
 
         setTimeout(() => {
             clearInterval(timerId);
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
+            displayLogMessage(''); // Clear the log message
             resolve();
         }, ms);
     });
@@ -117,8 +115,7 @@ function delayWithFeedback(ms) {
     activeDelayControl = {
         stop: () => {
             clearInterval(timerId);
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
+            displayLogMessage(''); // Clear the log message
             resolvePromise();
         }
     };
@@ -130,12 +127,17 @@ async function printTextSymbolBySymbol(text) {
     const fastDelay = 1;  // Faster delay time in milliseconds
     const slowDelay = 10; // Slower delay time in milliseconds
     const speedThreshold = 150; // Length threshold to switch to faster printing
+    let currentContent = chatBox.getContent();  // Get the current content of the chatBox
 
     for (let i = 0; i < text.length; i++) {
-        process.stdout.write(text[i]);
+        currentContent += text[i];  // Append the character to the current content
+        chatBox.setContent(currentContent);  // Update the chatBox content
+        chatBox.setScrollPerc(100);  // Keep scrolling to the bottom
+        screen.render();  // Render the screen to update the display
+
         // Use a shorter delay if the text length exceeds the threshold
         const delayTime = text.length > speedThreshold ? fastDelay : slowDelay;
-        await delay(delayTime);
+        await delay(delayTime);  // Wait for the specified delay
     }
 }
 
@@ -146,7 +148,7 @@ eventEmitter.on('indexingFailed', ({ data }) => {
     if (activeDelayControl) {
         activeDelayControl.stop();
     }
-    console.log(`\x1b[31mIndexing failed for ${data.baseUrl}. Returning to documentation type selection.\x1b[0m`);
+    displayLogMessage(`\x1b[31mIndexing failed for ${data.baseUrl}. Returning to documentation type selection.\x1b[0m`);
     askForDocumentationType();
 });
 
@@ -164,7 +166,7 @@ eventEmitter.on('dataSaved', async ({ data }) => {  // Add async here
 let isModelInteracting = false; // Flag to control log printing
 eventEmitter.setMaxListeners(20);
 let isWaitingForInput = false;
-let logCounter = 0;
+// let logCounter = 0;
 
 async function askQuestionAnimated_with_logs(question) {
 
@@ -187,91 +189,83 @@ async function askQuestionAnimated_with_logs(question) {
         if (isModelInteracting) return; // Skip logging if model interaction is active
         // Move up the cursor to the start of the previous line
         const logMessage = `${message} | ${question}`;
-        const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
+        // const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
 
-        process.stdout.write('\u001b[s');  // Save the current cursor position
-        process.stdout.moveCursor(0, -previousLinesCount);
+        // process.stdout.write('\u001b[s');  // Save the current cursor position
+        // process.stdout.moveCursor(0, -previousLinesCount);
 
         // Clear the previous line
-        process.stdout.clearLine(0);  // Clear the current line
-        process.stdout.cursorTo(0);   // Move cursor to the start of the line
+        // process.stdout.clearLine(0);  // Clear the current line
+        // process.stdout.cursorTo(0);   // Move cursor to the start of the line
 
         // Prepare the log message and calculate how many lines it will occupy
-        console.log(logMessage);  // This adds a newline automatically
+        displayLogMessage(logMessage);  // This adds a newline automatically
 
-        process.stdout.write('\u001b[u');  // Restore the saved cursor position
+        // process.stdout.write('\u001b[u');  // Restore the saved cursor position
         // Update the count of lines currently printed to the console
-        previousLinesCount = logLines;
+        // previousLinesCount = logLines;
     }
 
 
-
-    // while (!isWaitingForInput) {
-    //     // console.log('new promise timeout')
-    //     await new Promise(resolve => setTimeout(resolve, 100)); // Wait for 100 milliseconds before checking again
-    // }
     isWaitingForInput = true;
-
-    return new Promise((resolve) => {
-        const readlineCallback = (answer) => {
-            eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
-            eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
-            isWaitingForInput = false;
-            resolve(answer);
-        };
-        rl.question('You: ', readlineCallback);
-    });
+    const answer = await getUserInput('Your input:');
+    return answer;
+    // return new Promise((resolve) => {
+    //     const readlineCallback = (answer) => {
+    //         eventEmitter.removeAllListeners('data_received');  // Clean up listeners after getting an answer
+    //         eventEmitter.removeAllListeners('docsUpdated');  // Clean up listeners after getting an answer
+    //         isWaitingForInput = false;
+    //         resolve(answer);
+    //     };
+    //     rl.question('You: ', readlineCallback);
+    // });
 }
 
 async function askQuestionAnimated(question) {
-    await printTextSymbolBySymbol(question);
-    return new Promise((resolve) => {
-        process.stdout.write('\n'); // Add a newline at the end of the animation
-        rl.question('', (answer) => {
-            resolve(answer);
-        });
-    });
+    await printTextSymbolBySymbol(question);  // Assuming this function animates text display in chatBox
+    const answer = await getUserInput('Your input:');
+    return answer;
 }
 
 // Create readline interface
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+// const rl = readline.createInterface({
+//     input: process.stdin,
+//     output: process.stdout
+// });
 
 const handleDocumentationSearch = async (query) => {
-    await printTextSymbolBySymbol(`Docs search results:`);
-    console.log('');
+    await printTextSymbolBySymbol(`Docs search results:\n`);
+    // console.log('');
     const search_results = await performSearch(query);
     if (search_results.error) {
-        await printTextSymbolBySymbol(search_results.error);
-        console.log('');
+        await printTextSymbolBySymbol(`${search_results.error}\n`);
+        // console.log('');
         askForDocumentationType(); // Retry if there's an error
     } else {
         // Format and log the search results
         const formattedResults = search_results.map(result => {
             return `${result.number}: ${result.title}\n  ${result.link}\n  ${result.snippet}`;
         }).join('\n\n');
-        console.log('');
+        // console.log('');
         await printTextSymbolBySymbol(formattedResults);
         const selection = await new Promise(async (resolve) => { // Make the callback function async
-            process.stdout.write('\n'); // Add a newline at the end of the animation
-            console.log('');
-            const answer = await askQuestionAnimated('Type result index, or search for something new: ');
+            // process.stdout.write('\n'); // Add a newline at the end of the animation
+            // console.log('');
+            const answer = await askQuestionAnimated('\n\nType result index, or search for something new: ');
             resolve(answer);
         });
         const selectedResult = search_results.find(result => result.number.toString() === selection);
         if (selectedResult) {
-            console.log('');
+            // console.log('');
             await printTextSymbolBySymbol(`Indexing documentation: ${selectedResult.title}`);
-            console.log('');
+            // console.log('');
             let url = selectedResult.link;
             callIndexer(url);
             generateResponseFromLink(url); 
         } else {
             // Assume the user wants to perform a new search
             await printTextSymbolBySymbol(`Searching for: ${selection}`);
-            console.log('');
+            // console.log('');
             handleDocumentationSearch(selection); // Perform the search with the new query
         }
     }
@@ -282,8 +276,8 @@ const askForDocumentationType = async () => {
     answer = answer.trim().toLowerCase(); // Trim and convert to lowercase to standardize the input
     const urlPattern = new RegExp('^(https?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?$', 'i');
     if (urlPattern.test(answer)) {
-        await printTextSymbolBySymbol('Processing the link...');
-        console.log('');
+        await printTextSymbolBySymbol('\nProcessing the link...\n');
+        // console.log('');
         if (!answer.startsWith('http://') && !answer.startsWith('https://')) {
             answer = 'https://' + answer; // Default to https if no protocol is specified
         }
@@ -297,28 +291,28 @@ const askForDocumentationType = async () => {
 
 async function generateResponseFromLink(url) {
     try {
-        await printTextSymbolBySymbol(`Reading docs`);
-        console.log('');
+        await printTextSymbolBySymbol(`\nReading docs\n`);
+        // console.log('');
         delayWithFeedback(60000);
     } catch (error) {
-        console.error('Error generating response from link:', error);
-        rl.close(); // Ensure readline interface is closed on error
+        displayLogMessage(`Error: generating response from link: ${error}`);
+        // rl.close(); // Ensure readline interface is closed on error
     }
 }
 
 async function loadAndStartChat(url) {
-    let previousLinesCount = 1; 
+    // let previousLinesCount = 1; 
     try {
         let allData;  // Declare allData at the function scope
         try {
             allData = await getDataWithRetry(url);  // Assign the data retrieved
             // console.log("Data loaded, words:", allData.filteredTotalWords);
             if (!allData || !allData.links) {
-                console.error('links are undefined or not an object:', allData ? allData.links : 'allData is null');
+                displayLogMessage(`Error: links are undefined or not an object: ${allData} ? ${allData.links} : allData is null`);
                 return;
             }
         } catch (error) {
-            console.error('Error loading or starting chat:', error);
+            `Error loading or starting chat: ${error}`;
             return;  // Exit the function if data loading fails
         }
         let allContent = [];
@@ -331,7 +325,7 @@ async function loadAndStartChat(url) {
                 }
             }
         } else {
-            console.error('links are undefined or not an object:', allData.links);
+            displayLogMessage(`Error: links are undefined or not an object: ${allData.links}`);
             return;  
         }
 
@@ -345,24 +339,24 @@ async function loadAndStartChat(url) {
             startChatSession(content);
     
             const logMessage = 'Chat is reloaded with updated context';
-            const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
+            // const logLines = Math.ceil((logMessage.length + 1) / process.stdout.columns);
     
-            process.stdout.write('\u001b[s');  // Save the current cursor position
-            process.stdout.moveCursor(0, -previousLinesCount);
+            // process.stdout.write('\u001b[s');  // Save the current cursor position
+            // process.stdout.moveCursor(0, -previousLinesCount);
     
             // Clear the previous line
-            process.stdout.clearLine(0);  // Clear the current line
-            process.stdout.cursorTo(0);   // Move cursor to the start of the line
+            // process.stdout.clearLine(0);  // Clear the current line
+            // process.stdout.cursorTo(0);   // Move cursor to the start of the line
     
             // Prepare the log message and calculate how many lines it will occupy
-            console.log(logMessage);  // This adds a newline automatically
+            displayLogMessage(logMessage);  // This adds a newline automatically
     
-            process.stdout.write('\u001b[u');  // Restore the saved cursor position
+            // process.stdout.write('\u001b[u');  // Restore the saved cursor position
             // Update the count of lines currently printed to the console
-            previousLinesCount = logLines;
+            // previousLinesCount = logLines;
         }
     } catch (error) {
-        console.error('Error loading or starting chat:', error);
+        displayLogMessage(`Error: loading or starting chat: ${error}`);
     }
 }
 
@@ -401,7 +395,7 @@ async function startChatSession(content) {
 
 async function askForMessagePrompt(chat) {
     if (!chat || typeof chat.sendMessageStream !== 'function') {
-        console.error('Invalid chat session object.');
+        displayLogMessage(`Error: Invalid chat session object.`);
         return;
     }
     // console.log('_____________________'); // Indicate the end of the stream
@@ -412,30 +406,31 @@ async function askForMessagePrompt(chat) {
     if (msg.toLowerCase() === "exit") {
         await printTextSymbolBySymbol("Exiting...");
         isModelInteracting = false; // Re-enable logging after interaction
-        rl.close();
+        // rl.close();
         process.exit(0); 
     } else {
         // await printTextSymbolBySymbol(`Sending message to the model...`);
-        console.log('');
+        // console.log('');
         const startTime = Date.now();
         let timerId = setInterval(() => {
             // Update the console with the elapsed time every tenth of a second
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
+            // process.stdout.clearLine(0);
+            // process.stdout.cursorTo(0);
             let elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
-            process.stdout.write(`Thinking... [${elapsedTime.toFixed(1)}s].`);
+            displayLogMessage(`Thinking... [${elapsedTime.toFixed(1)}s].`);
         }, 100); // Update every 100 milliseconds (0.1 second)
 
         try {
             const modifiedMsg = msg + ". Please provide response solely based on the provided context. Keep your answer as short as possible.";
             const result = await chat.sendMessageStream(modifiedMsg);
             clearInterval(timerId); // Stop the timer once the first chunk is received
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
+            // process.stdout.clearLine(0);
+            // process.stdout.cursorTo(0);
 
             let text = '';
             let isFirstChunk = true;
             let lineCount = 0;
+            let currentChat=`${chatBox.getContent()}`
             for await (const chunk of result.stream) {
                 const chunkText = chunk.text();
                 lineCount += (chunkText.match(/\n/g) || []).length + 1; // Count new lines and add one for the current line
@@ -449,13 +444,15 @@ async function askForMessagePrompt(chat) {
                 text += chunk.text();
             }
             const output = marked(text);
-            process.stdout.moveCursor(0, -lineCount);
-            process.stdout.clearScreenDown();
-            console.log(`Model: ${output}`);
-            process.stdout.moveCursor(0, -1);
+            let updatedchat= currentChat+output;
+            reprintChatMessage(updatedchat);
+            // process.stdout.moveCursor(0, -lineCount);
+            // process.stdout.clearScreenDown();
+            // printTextSymbolBySymbol(`Model: ${output}`);
+            // process.stdout.moveCursor(0, -1);
         } catch (error) {
             clearInterval(timerId); // Ensure to clear the timer in case of an error
-            console.error('Failed to fetch response:', error);
+            displayLogMessage(`Error: Failed to fetch response: ${error}`);
             askForMessagePrompt(chat);  // Recursive call to allow continuous interaction
         }
         isModelInteracting = false; // Re-enable logging after interaction

@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 const indexerEvents = new EventEmitter();
 import eventEmitter from './eventEmitter.js';  
 import { fetchGitHubContent } from './fetchGitHubContent.js';
+import { displayLogMessage} from './blessed.js';
 
 async function loadExistingData(baseUrl) {
     let data_received = await fetchDataFromWorker(baseUrl, 'baseUrlSearch');
@@ -35,7 +36,7 @@ async function saveLinks(links, baseUrl, totalWords, totalLinks, filteredTotalWo
     saveData(links, baseUrl, totalWords, totalLinks, filteredTotalWords);
     saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWords, links)
         .catch(error => {
-            console.error('Failed to save data to worker asynchronously:', error);
+            displayLogMessage(`Error: Failed to save data to worker asynchronously: ${error}`);
         });
     return
 }
@@ -75,7 +76,7 @@ async function saveDataToWorker(baseUrl, totalWords, totalLinks, filteredTotalWo
         const result = await response.json();
         // console.log('result: ',result);
     } catch (error) {
-        console.error('Failed to send data to worker:', error);
+        displayLogMessage(`Error: Failed to send data to worker: ${error}`);
     }
 }
 
@@ -100,8 +101,8 @@ async function fetchDataFromWorker(url, searchType) {
                 return errorData; // Return the error data for further handling
             }
 
-            console.error(`HTTP error! status: ${response.status} ${response.statusText}`);
-            console.error(`Error response body: ${errorBody}`);
+            displayLogMessage(`Error: HTTP error! status: ${response.status} ${response.statusText}`);
+            displayLogMessage(`Error: response body: ${errorBody}`);
             // For other error statuses, you might still want to throw an error
             throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
         }
@@ -110,7 +111,7 @@ async function fetchDataFromWorker(url, searchType) {
         // console.log('Data received from worker:');
         return data;
     } catch (error) {
-        console.error('Failed to fetch data from worker:', error);
+        displayLogMessage(`Error: Failed to fetch data from worker: ${error}`);
         // Instead of re-throwing the error, handle it gracefully
         return { error: true, message: error.message };
     }
@@ -212,7 +213,7 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
                 } catch (error) {
                     attempt++;
                     if (attempt === maxAttempts) {
-                        console.log("\nFailed to retrieve links after several attempts. Error", error);
+                        displayLogMessage(`Error: \nFailed to retrieve links after several attempts. Error: ${error}`);
                     }
                 }
             }
@@ -228,7 +229,7 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
                 extraData = await fetchGitHubContent(url);
                 allText = allText + '\n\n' + extraData;
             } catch (error) {
-                console.error(`Error fetching extra data for ${url}:`, error);
+                displayLogMessage(`Error: fetching extra data for ${url}, ${error}`);
             }
         }
         eventEmitter.emit('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });
@@ -239,17 +240,17 @@ async function indexLink(driver, url, allLinks, doneLinksCount, totalWords, filt
         return { allLinks, allText, filteredText, status, wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
     } catch (error) {
         if (error.name === 'WebDriverError' && error.message.includes('net::ERR_NAME_NOT_RESOLVED')) {
-            console.error(`The URL ${url} could not be resolved. It may be incorrect or the domain may be unreachable.`);
+            displayLogMessage(`Error: The URL ${url} could not be resolved. It may be incorrect or the domain may be unreachable.`);
             attempt++;  // Increment the attempt counter
             if (attempt < maxAttempts) {
                 driver = await buildDriver(); // Reinitialize the driver
                 return indexLink(driver, url, allLinks, doneLinksCount, totalWords, filteredTotalWords, allTexts, maxOccurrences); // Retry the operation
             } else {
-                console.error("Maximum retry attempts reached, skipping URL:", url);
+                displayLogMessage(`Error: Maximum retry attempts reached, skipping URL: ${url}`);
                 return { allLinks, allText, filteredText, status: 'Seems like it failed', wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
             }
         } else {
-            console.error(`Error indexing ${url}:`, error);
+            displayLogMessage(`Error: indexing ${url}: ${error}`);
             return { allLinks, allText, filteredText, status: 'Seems like it failed', wordCount, filteredWordCount, totalWords, cookieStatus, timestamp };
         }
     }
@@ -299,8 +300,8 @@ export async function main(baseUrl) {
                     // console.log('data_received', { message: `${doneLinksCount} / ${allLinks.size} links, ${filteredTotalWords} words processed` });
 
                     if (result.status === 'Seems like it failed') {
-                        console.log(`Failed to index ${url}. Exiting...`);
-                        console.log(`Content: ${result.allText}`);
+                        displayLogMessage(`Error: Failed to index ${url}. Exiting...`);
+                        displayLogMessage(`Error: Content: ${result.allText}`);
                         if (url === baseUrl) { 
                             let data = {baseUrl: baseUrl};
                             eventEmitter.emit('indexingFailed', { data });
