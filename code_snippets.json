@@ -1,0 +1,503 @@
+{
+  "https://docs.llamaindex.ai/en/stable/": {
+    "status": "",
+    "indexed_timestamp": "2024-05-04T03:08:28.886Z",
+    "content": "Skip to content\nLlamaIndex\nLlamaIndex\nInitializing search\nHome\nLearn\nUse Cases\nExamples\nComponent Guides\nAdvanced Topics\nAPI Reference\nOpen-Source Community\nLlamaCloud\nHome\nHigh-Level Concepts (RAG)\nInstallation and Setup\nHow to read these docs\nStarter Examples\nDiscover LlamaIndex Video Series\nFrequently Asked Questions (FAQ)\nStarter Tools\nTable of contents\n🚀 Why Context Augmentation?\n🦙 LlamaIndex is the Data Framework for Context-Augmented LLM Apps\n👨‍👩‍👧‍👦 Who is LlamaIndex for?\nGetting Started\n🗺️ Ecosystem\nLlamaCloud\nCommunity\nAssociated projects\nWelcome to LlamaIndex 🦙 !#\n\nLlamaIndex is a framework for building context-augmented LLM applications. Context augmentation refers to any use case that applies LLMs on top of your private or domain-specific data. Some popular use cases include the following:\n\nQuestion-Answering Chatbots (commonly referred to as RAG systems, which stands for \"Retrieval-Augmented Generation\")\nDocument Understanding and Extraction\nAutonomous Agents that can perform research and take actions\n\nLlamaIndex provides the tools to build any of these above use cases from prototype to production. The tools allow you to both ingest/process this data and implement complex query workflows combining data access with LLM prompting.\n\nLlamaIndex is available in Python (these docs) and Typescript.\n\nTip\n\nUpdating to LlamaIndex v0.10.0? Check out the migration guide.\n\n🚀 Why Context Augmentation?#\n\nLLMs offer a natural language interface between humans and data. Widely available models come pre-trained on huge amounts of publicly available data. However, they are not trained on your data, which may be private or specific to the problem you're trying to solve. It's behind APIs, in SQL databases, or trapped in PDFs and slide decks.\n\nLlamaIndex provides tooling to enable context augmentation. A popular example is Retrieval-Augmented Generation (RAG) which combines context with LLMs at inference time. Another is finetuning.\n\n🦙 LlamaIndex is the Data Framework for Context-Augmented LLM Apps#\n\nLlamaIndex imposes no restriction on how you use LLMs. You can still use LLMs as auto-complete, chatbots, semi-autonomous agents, and more. It only makes LLMs more relevant to you.\n\nLlamaIndex provides the following tools to help you quickly standup production-ready LLM applications:\n\nData connectors ingest your existing data from their native source and format. These could be APIs, PDFs, SQL, and (much) more.\nData indexes structure your data in intermediate representations that are easy and performant for LLMs to consume.\nEngines provide natural language access to your data. For example:\nQuery engines are powerful interfaces for question-answering (e.g. a RAG pipeline).\nChat engines are conversational interfaces for multi-message, \"back and forth\" interactions with your data.\nAgents are LLM-powered knowledge workers augmented by tools, from simple helper functions to API integrations and more.\nObservability/Evaluation integrations that enable you to rigorously experiment, evaluate, and monitor your app in a virtuous cycle.\n👨‍👩‍👧‍👦 Who is LlamaIndex for?#\n\nLlamaIndex provides tools for beginners, advanced users, and everyone in between.\n\nOur high-level API allows beginner users to use LlamaIndex to ingest and query their data in 5 lines of code.\n\nFor more complex applications, our lower-level APIs allow advanced users to customize and extend any module—data connectors, indices, retrievers, query engines, reranking modules—to fit their needs.\n\nGetting Started#\n\nTo install the library:\n\npip install llama-index\n\nWe recommend starting at how to read these docs which will point you to the right place based on your experience level.\n\n🗺️ Ecosystem#\n\nTo download or contribute, find LlamaIndex on:\n\nGithub\nPyPi\nLlamaIndex.TS (Typescript/Javascript package):\nLlamaIndex.TS Github\nTypeScript Docs\nLlamaIndex.TS npm\nLlamaCloud#\n\nIf you're an enterprise developer, check out LlamaCloud. It is a managed platform for data parsing and ingestion, allowing you to get production-quality data for your production LLM application.\n\nCheck out the following resources:\n\nLlamaParse: our state-of-the-art document parsing solution. Part of LlamaCloud and also available as a self-serve API. Signup here for API access.\nLlamaCloud: our e2e data platform. In private preview with startup and enterprise plans. Talk to us if interested.\nCommunity#\n\nNeed help? Have a feature suggestion? Join the LlamaIndex community:\n\nTwitter\nDiscord\nAssociated projects#\n🏡 LlamaHub | A large (and growing!) collection of custom data connectors\nSEC Insights | A LlamaIndex-powered application for financial research\ncreate-llama | A CLI tool to quickly scaffold LlamaIndex projects\n Back to top\nNext\nHigh-Level Concepts (RAG)\n\n🦙\n\n⌘ + K",
+    "word_count": 683,
+    "filtered_content": "Skip to content\nInitializing search\nLearn\nUse Cases\nExamples\nComponent Guides\nAdvanced Topics\nAPI Reference\nOpen-Source Community\nInstallation and Setup\nHow to read these docs\nStarter Examples\nDiscover LlamaIndex Video Series\nFrequently Asked Questions (FAQ)\nStarter Tools\nTable of contents\n🚀 Why Context Augmentation?\n🦙 LlamaIndex is the Data Framework for Context-Augmented LLM Apps\n👨‍👩‍👧‍👦 Who is LlamaIndex for?\nGetting Started\n🗺️ Ecosystem\nCommunity\nAssociated projects\nWelcome to LlamaIndex 🦙 !#\nLlamaIndex is a framework for building context-augmented LLM applications. Context augmentation refers to any use case that applies LLMs on top of your private or domain-specific data. Some popular use cases include the following:\nQuestion-Answering Chatbots (commonly referred to as RAG systems, which stands for \"Retrieval-Augmented Generation\")\nDocument Understanding and Extraction\nAutonomous Agents that can perform research and take actions\nLlamaIndex provides the tools to build any of these above use cases from prototype to production. The tools allow you to both ingest/process this data and implement complex query workflows combining data access with LLM prompting.\nLlamaIndex is available in Python (these docs) and Typescript.\nTip\nUpdating to LlamaIndex v0.10.0? Check out the migration guide.\n🚀 Why Context Augmentation?#\nLLMs offer a natural language interface between humans and data. Widely available models come pre-trained on huge amounts of publicly available data. However, they are not trained on your data, which may be private or specific to the problem you're trying to solve. It's behind APIs, in SQL databases, or trapped in PDFs and slide decks.\nLlamaIndex provides tooling to enable context augmentation. A popular example is Retrieval-Augmented Generation (RAG) which combines context with LLMs at inference time. Another is finetuning.\n🦙 LlamaIndex is the Data Framework for Context-Augmented LLM Apps#\nLlamaIndex imposes no restriction on how you use LLMs. You can still use LLMs as auto-complete, chatbots, semi-autonomous agents, and more. It only makes LLMs more relevant to you.\nLlamaIndex provides the following tools to help you quickly standup production-ready LLM applications:\nData connectors ingest your existing data from their native source and format. These could be APIs, PDFs, SQL, and (much) more.\nData indexes structure your data in intermediate representations that are easy and performant for LLMs to consume.\nEngines provide natural language access to your data. For example:\nQuery engines are powerful interfaces for question-answering (e.g. a RAG pipeline).\nChat engines are conversational interfaces for multi-message, \"back and forth\" interactions with your data.\nAgents are LLM-powered knowledge workers augmented by tools, from simple helper functions to API integrations and more.\nObservability/Evaluation integrations that enable you to rigorously experiment, evaluate, and monitor your app in a virtuous cycle.\n👨‍👩‍👧‍👦 Who is LlamaIndex for?#\nLlamaIndex provides tools for beginners, advanced users, and everyone in between.\nOur high-level API allows beginner users to use LlamaIndex to ingest and query their data in 5 lines of code.\nFor more complex applications, our lower-level APIs allow advanced users to customize and extend any module—data connectors, indices, retrievers, query engines, reranking modules—to fit their needs.\nGetting Started#\nTo install the library:\npip install llama-index\nWe recommend starting at how to read these docs which will point you to the right place based on your experience level.\n🗺️ Ecosystem#\nTo download or contribute, find LlamaIndex on:\nGithub\nPyPi\nLlamaIndex.TS (Typescript/Javascript package):\nLlamaIndex.TS Github\nTypeScript Docs\nLlamaIndex.TS npm\nLlamaCloud#\nIf you're an enterprise developer, check out LlamaCloud. It is a managed platform for data parsing and ingestion, allowing you to get production-quality data for your production LLM application.\nCheck out the following resources:\nLlamaParse: our state-of-the-art document parsing solution. Part of LlamaCloud and also available as a self-serve API. Signup here for API access.\nLlamaCloud: our e2e data platform. In private preview with startup and enterprise plans. Talk to us if interested.\nCommunity#\nNeed help? Have a feature suggestion? Join the LlamaIndex community:\nTwitter\nDiscord\nAssociated projects#\n🏡 LlamaHub | A large (and growing!) collection of custom data connectors\nSEC Insights | A LlamaIndex-powered application for financial research\ncreate-llama | A CLI tool to quickly scaffold LlamaIndex projects\n Back to top\nNext\n🦙\n⌘ + K",
+    "filtered_word_count": 671,
+    "combinedResults": [
+      {
+        "content": "undefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined"
+      }
+    ],
+    "resultsWithLines": [
+      {
+        "result": "text",
+        "line": "Skip to content"
+      },
+      {
+        "result": "code",
+        "line": "Initializing search"
+      },
+      {
+        "result": "text",
+        "line": "Learn"
+      },
+      {
+        "result": "text",
+        "line": "Use Cases"
+      },
+      {
+        "result": "code",
+        "line": "Examples"
+      },
+      {
+        "result": "code",
+        "line": "Component Guides"
+      },
+      {
+        "result": "text",
+        "line": "Advanced Topics"
+      },
+      {
+        "result": "code",
+        "line": "API Reference"
+      },
+      {
+        "result": "text",
+        "line": "Open-Source Community"
+      },
+      {
+        "result": "code",
+        "line": "Installation and Setup"
+      },
+      {
+        "result": "text",
+        "line": "How to read these docs"
+      },
+      {
+        "result": "code",
+        "line": "Starter Examples"
+      },
+      {
+        "result": "text",
+        "line": "Discover LlamaIndex Video Series"
+      },
+      {
+        "result": "text",
+        "line": "Frequently Asked Questions (FAQ)"
+      },
+      {
+        "result": "code",
+        "line": "Starter Tools"
+      },
+      {
+        "result": "text",
+        "line": "Table of contents"
+      },
+      {
+        "result": "text",
+        "line": "🚀 Why Context Augmentation?"
+      },
+      {
+        "result": "code",
+        "line": "🦙 LlamaIndex is the Data Framework for Context-Augmented LLM Apps"
+      },
+      {
+        "result": "text",
+        "line": "👨‍👩‍👧‍👦 Who is LlamaIndex for?"
+      },
+      {
+        "result": "text",
+        "line": "Getting Started"
+      },
+      {
+        "result": "text",
+        "line": "🗺️ Ecosystem"
+      },
+      {
+        "result": "text",
+        "line": "Community"
+      },
+      {
+        "result": "text",
+        "line": "Associated projects"
+      },
+      {
+        "result": "text",
+        "line": "Welcome to LlamaIndex 🦙 !#"
+      },
+      {
+        "result": "text",
+        "line": "LlamaIndex is a framework for building context-augmented LLM applications. Context augmentation refers to any use case that applies LLMs on top of your private or domain-specific data. Some popular use cases include the following:"
+      },
+      {
+        "result": "text",
+        "line": "Question-Answering Chatbots (commonly referred to as RAG systems, which stands for \"Retrieval-Augmented Generation\")"
+      },
+      {
+        "result": "text",
+        "line": "Document Understanding and Extraction"
+      },
+      {
+        "result": "text",
+        "line": "Autonomous Agents that can perform research and take actions"
+      },
+      {
+        "result": "text",
+        "line": "LlamaIndex provides the tools to build any of these above use cases from prototype to production. The tools allow you to both ingest/process this data and implement complex query workflows combining data access with LLM prompting."
+      },
+      {
+        "result": "code",
+        "line": "LlamaIndex is available in Python (these docs) and Typescript."
+      },
+      {
+        "result": "text",
+        "line": "Tip"
+      },
+      {
+        "result": "text",
+        "line": "Updating to LlamaIndex v0.10.0? Check out the migration guide."
+      },
+      {
+        "result": "text",
+        "line": "🚀 Why Context Augmentation?#"
+      },
+      {
+        "result": "text",
+        "line": "LLMs offer a natural language interface between humans and data. Widely available models come pre-trained on huge amounts of publicly available data. However, they are not trained on your data, which may be private or specific to the problem you're trying to solve. It's behind APIs, in SQL databases, or trapped in PDFs and slide decks."
+      },
+      {
+        "result": "text",
+        "line": "LlamaIndex provides tooling to enable context augmentation. A popular example is Retrieval-Augmented Generation (RAG) which combines context with LLMs at inference time. Another is finetuning."
+      },
+      {
+        "result": "code",
+        "line": "🦙 LlamaIndex is the Data Framework for Context-Augmented LLM Apps#"
+      },
+      {
+        "result": "text",
+        "line": "LlamaIndex imposes no restriction on how you use LLMs. You can still use LLMs as auto-complete, chatbots, semi-autonomous agents, and more. It only makes LLMs more relevant to you."
+      },
+      {
+        "result": "text",
+        "line": "LlamaIndex provides the following tools to help you quickly standup production-ready LLM applications:"
+      },
+      {
+        "result": "text",
+        "line": "Data connectors ingest your existing data from their native source and format. These could be APIs, PDFs, SQL, and (much) more."
+      },
+      {
+        "result": "text",
+        "line": "Data indexes structure your data in intermediate representations that are easy and performant for LLMs to consume."
+      },
+      {
+        "result": "text",
+        "line": "Engines provide natural language access to your data. For example:"
+      },
+      {
+        "result": "text",
+        "line": "Query engines are powerful interfaces for question-answering (e.g. a RAG pipeline)."
+      },
+      {
+        "result": "text",
+        "line": "Chat engines are conversational interfaces for multi-message, \"back and forth\" interactions with your data."
+      },
+      {
+        "result": "text",
+        "line": "Agents are LLM-powered knowledge workers augmented by tools, from simple helper functions to API integrations and more."
+      },
+      {
+        "result": "text",
+        "line": "Observability/Evaluation integrations that enable you to rigorously experiment, evaluate, and monitor your app in a virtuous cycle."
+      },
+      {
+        "result": "text",
+        "line": "👨‍👩‍👧‍👦 Who is LlamaIndex for?#"
+      },
+      {
+        "result": "text",
+        "line": "LlamaIndex provides tools for beginners, advanced users, and everyone in between."
+      },
+      {
+        "result": "text",
+        "line": "Our high-level API allows beginner users to use LlamaIndex to ingest and query their data in 5 lines of code."
+      },
+      {
+        "result": "text",
+        "line": "For more complex applications, our lower-level APIs allow advanced users to customize and extend any module—data connectors, indices, retrievers, query engines, reranking modules—to fit their needs."
+      },
+      {
+        "result": "code",
+        "line": "Getting Started#"
+      },
+      {
+        "result": "code",
+        "line": "To install the library:"
+      },
+      {
+        "result": "text",
+        "line": "pip install llama-index"
+      },
+      {
+        "result": "text",
+        "line": "We recommend starting at how to read these docs which will point you to the right place based on your experience level."
+      },
+      {
+        "result": "code",
+        "line": "🗺️ Ecosystem#"
+      },
+      {
+        "result": "text",
+        "line": "To download or contribute, find LlamaIndex on:"
+      },
+      {
+        "result": "code",
+        "line": "Github"
+      },
+      {
+        "result": "code",
+        "line": "PyPi"
+      },
+      {
+        "result": "code",
+        "line": "LlamaIndex.TS (Typescript/Javascript package):"
+      },
+      {
+        "result": "code",
+        "line": "LlamaIndex.TS Github"
+      },
+      {
+        "result": "code",
+        "line": "TypeScript Docs"
+      },
+      {
+        "result": "code",
+        "line": "LlamaIndex.TS npm"
+      },
+      {
+        "result": "code",
+        "line": "LlamaCloud#"
+      },
+      {
+        "result": "text",
+        "line": "If you're an enterprise developer, check out LlamaCloud. It is a managed platform for data parsing and ingestion, allowing you to get production-quality data for your production LLM application."
+      },
+      {
+        "result": "text",
+        "line": "Check out the following resources:"
+      },
+      {
+        "result": "text",
+        "line": "LlamaParse: our state-of-the-art document parsing solution. Part of LlamaCloud and also available as a self-serve API. Signup here for API access."
+      },
+      {
+        "result": "text",
+        "line": "LlamaCloud: our e2e data platform. In private preview with startup and enterprise plans. Talk to us if interested."
+      },
+      {
+        "result": "code",
+        "line": "Community#"
+      },
+      {
+        "result": "text",
+        "line": "Need help? Have a feature suggestion? Join the LlamaIndex community:"
+      },
+      {
+        "result": "text",
+        "line": "Twitter"
+      },
+      {
+        "result": "text",
+        "line": "Discord"
+      },
+      {
+        "result": "code",
+        "line": "Associated projects#"
+      },
+      {
+        "result": "text",
+        "line": "🏡 LlamaHub | A large (and growing!) collection of custom data connectors"
+      },
+      {
+        "result": "text",
+        "line": "SEC Insights | A LlamaIndex-powered application for financial research"
+      },
+      {
+        "result": "code",
+        "line": "create-llama | A CLI tool to quickly scaffold LlamaIndex projects"
+      },
+      {
+        "result": "text",
+        "line": " Back to top"
+      },
+      {
+        "result": "text",
+        "line": "Next"
+      },
+      {
+        "result": "text",
+        "line": "🦙"
+      },
+      {
+        "result": "code",
+        "line": "⌘ + K"
+      }
+    ]
+  },
+  "https://docs.llamaindex.ai/en/stable/understanding/": {
+    "status": "",
+    "indexed_timestamp": "2024-05-04T03:08:33.610Z",
+    "content": "Skip to content\nLlamaIndex\nBuilding an LLM Application\nInitializing search\nHome\nLearn\nUse Cases\nExamples\nComponent Guides\nAdvanced Topics\nAPI Reference\nOpen-Source Community\nLlamaCloud\nLearn\nUsing LLMs\nLoading & Ingestion\nIndexing & Embedding\nStoring\nQuerying\nTracing and Debugging\nEvaluating\nPutting it all Together\nTable of contents\nKey steps in building an LLM application\nLet's get started!\nBuilding an LLM application#\n\nWelcome to the beginning of Understanding LlamaIndex. This is a series of short, bite-sized tutorials on every stage of building an LLM application to get you acquainted with how to use LlamaIndex before diving into more advanced and subtle strategies. If you're an experienced programmer new to LlamaIndex, this is the place to start.\n\nKey steps in building an LLM application#\n\nTip\n\nIf you've already read our high-level concepts page you'll recognize several of these steps.\n\nThere are a series of key steps involved in building any LLM-powered application, whether it's answering questions about your data, creating a chatbot, or an autonomous agent. Throughout our documentation, you'll notice sections are arranged roughly in the order you'll perform these steps while building your app. You'll learn about:\n\nUsing LLMs: whether it's OpenAI or any number of hosted LLMs or a locally-run model of your own, LLMs are used at every step of the way, from indexing and storing to querying and parsing your data. LlamaIndex comes with a huge number of reliable, tested prompts and we'll also show you how to customize your own.\n\nLoading: getting your data from wherever it lives, whether that's unstructured text, PDFs, databases, or APIs to other applications. LlamaIndex has hundreds of connectors to every data source over at LlamaHub.\n\nIndexing: once you've got your data there are an infinite number of ways to structure access to that data to ensure your applications is always working with the most relevant data. LlamaIndex has a huge number of these strategies built-in and can help you select the best ones.\n\nStoring: you will probably find it more efficient to store your data in indexed form, or pre-processed summaries provided by an LLM, often in a specialized database known as a Vector Store (see below). You can also store your indexes, metadata and more.\n\nQuerying: every indexing strategy has a corresponding querying strategy and there are lots of ways to improve the relevance, speed and accuracy of what you retrieve and what the LLM does with it before returning it to you, including turning it into structured responses such as an API.\n\nPutting it all together: whether you are building question & answering, chatbots, an API, or an autonomous agent, we show you how to get your application into production.\n\nTracing and debugging: also called observability, it's especially important with LLM applications to be able to look into the inner workings of what's going on to help you debug problems and spot places to improve.\n\nEvaluating: every strategy has pros and cons and a key part of building, shipping and evolving your application is evaluating whether your change has improved your application in terms of accuracy, performance, clarity, cost and more. Reliably evaluating your changes is a crucial part of LLM application development.\n\nLet's get started!#\n\nReady to dive in? Head to using LLMs.\n\n Back to top\nPrevious\nRAG CLI\nNext\nUsing LLMs\n\n🦙\n\n⌘ + K",
+    "word_count": 548,
+    "filtered_content": "Building an LLM Application\nLoading & Ingestion\nIndexing & Embedding\nStoring\nQuerying\nTracing and Debugging\nEvaluating\nPutting it all Together\nKey steps in building an LLM application\nLet's get started!\nBuilding an LLM application#\nWelcome to the beginning of Understanding LlamaIndex. This is a series of short, bite-sized tutorials on every stage of building an LLM application to get you acquainted with how to use LlamaIndex before diving into more advanced and subtle strategies. If you're an experienced programmer new to LlamaIndex, this is the place to start.\nKey steps in building an LLM application#\nIf you've already read our high-level concepts page you'll recognize several of these steps.\nThere are a series of key steps involved in building any LLM-powered application, whether it's answering questions about your data, creating a chatbot, or an autonomous agent. Throughout our documentation, you'll notice sections are arranged roughly in the order you'll perform these steps while building your app. You'll learn about:\nUsing LLMs: whether it's OpenAI or any number of hosted LLMs or a locally-run model of your own, LLMs are used at every step of the way, from indexing and storing to querying and parsing your data. LlamaIndex comes with a huge number of reliable, tested prompts and we'll also show you how to customize your own.\nLoading: getting your data from wherever it lives, whether that's unstructured text, PDFs, databases, or APIs to other applications. LlamaIndex has hundreds of connectors to every data source over at LlamaHub.\nIndexing: once you've got your data there are an infinite number of ways to structure access to that data to ensure your applications is always working with the most relevant data. LlamaIndex has a huge number of these strategies built-in and can help you select the best ones.\nStoring: you will probably find it more efficient to store your data in indexed form, or pre-processed summaries provided by an LLM, often in a specialized database known as a Vector Store (see below). You can also store your indexes, metadata and more.\nQuerying: every indexing strategy has a corresponding querying strategy and there are lots of ways to improve the relevance, speed and accuracy of what you retrieve and what the LLM does with it before returning it to you, including turning it into structured responses such as an API.\nPutting it all together: whether you are building question & answering, chatbots, an API, or an autonomous agent, we show you how to get your application into production.\nTracing and debugging: also called observability, it's especially important with LLM applications to be able to look into the inner workings of what's going on to help you debug problems and spot places to improve.\nEvaluating: every strategy has pros and cons and a key part of building, shipping and evolving your application is evaluating whether your change has improved your application in terms of accuracy, performance, clarity, cost and more. Reliably evaluating your changes is a crucial part of LLM application development.\nLet's get started!#\nReady to dive in? Head to using LLMs.\nPrevious\nRAG CLI",
+    "filtered_word_count": 511,
+    "combinedResults": [
+      {
+        "content": "undefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined"
+      }
+    ],
+    "resultsWithLines": [
+      {
+        "result": "text",
+        "line": "Building an LLM Application"
+      },
+      {
+        "result": "code",
+        "line": "Loading & Ingestion"
+      },
+      {
+        "result": "code",
+        "line": "Indexing & Embedding"
+      },
+      {
+        "result": "text",
+        "line": "Storing"
+      },
+      {
+        "result": "text",
+        "line": "Querying"
+      },
+      {
+        "result": "code",
+        "line": "Tracing and Debugging"
+      },
+      {
+        "result": "code",
+        "line": "Evaluating"
+      },
+      {
+        "result": "code",
+        "line": "Putting it all Together"
+      },
+      {
+        "result": "code",
+        "line": "Key steps in building an LLM application"
+      },
+      {
+        "result": "Error: Failed to get valid response after several attempts.",
+        "line": "Let's get started!"
+      },
+      {
+        "result": "code",
+        "line": "Building an LLM application#"
+      },
+      {
+        "result": "text",
+        "line": "Welcome to the beginning of Understanding LlamaIndex. This is a series of short, bite-sized tutorials on every stage of building an LLM application to get you acquainted with how to use LlamaIndex before diving into more advanced and subtle strategies. If you're an experienced programmer new to LlamaIndex, this is the place to start."
+      },
+      {
+        "result": "text",
+        "line": "Key steps in building an LLM application#"
+      },
+      {
+        "result": "text",
+        "line": "If you've already read our high-level concepts page you'll recognize several of these steps."
+      },
+      {
+        "result": "text",
+        "line": "There are a series of key steps involved in building any LLM-powered application, whether it's answering questions about your data, creating a chatbot, or an autonomous agent. Throughout our documentation, you'll notice sections are arranged roughly in the order you'll perform these steps while building your app. You'll learn about:"
+      },
+      {
+        "result": "text",
+        "line": "Using LLMs: whether it's OpenAI or any number of hosted LLMs or a locally-run model of your own, LLMs are used at every step of the way, from indexing and storing to querying and parsing your data. LlamaIndex comes with a huge number of reliable, tested prompts and we'll also show you how to customize your own."
+      },
+      {
+        "result": "text",
+        "line": "Loading: getting your data from wherever it lives, whether that's unstructured text, PDFs, databases, or APIs to other applications. LlamaIndex has hundreds of connectors to every data source over at LlamaHub."
+      },
+      {
+        "result": "text",
+        "line": "Indexing: once you've got your data there are an infinite number of ways to structure access to that data to ensure your applications is always working with the most relevant data. LlamaIndex has a huge number of these strategies built-in and can help you select the best ones."
+      },
+      {
+        "result": "text",
+        "line": "Storing: you will probably find it more efficient to store your data in indexed form, or pre-processed summaries provided by an LLM, often in a specialized database known as a Vector Store (see below). You can also store your indexes, metadata and more."
+      },
+      {
+        "result": "text",
+        "line": "Querying: every indexing strategy has a corresponding querying strategy and there are lots of ways to improve the relevance, speed and accuracy of what you retrieve and what the LLM does with it before returning it to you, including turning it into structured responses such as an API."
+      },
+      {
+        "result": "text",
+        "line": "Putting it all together: whether you are building question & answering, chatbots, an API, or an autonomous agent, we show you how to get your application into production."
+      },
+      {
+        "result": "text",
+        "line": "Tracing and debugging: also called observability, it's especially important with LLM applications to be able to look into the inner workings of what's going on to help you debug problems and spot places to improve."
+      },
+      {
+        "result": "text",
+        "line": "Evaluating: every strategy has pros and cons and a key part of building, shipping and evolving your application is evaluating whether your change has improved your application in terms of accuracy, performance, clarity, cost and more. Reliably evaluating your changes is a crucial part of LLM application development."
+      },
+      {
+        "result": "code",
+        "line": "Let's get started!#"
+      },
+      {
+        "result": "text",
+        "line": "Ready to dive in? Head to using LLMs."
+      },
+      {
+        "result": "text",
+        "line": "Previous"
+      },
+      {
+        "result": "code",
+        "line": "RAG CLI"
+      }
+    ]
+  },
+  "https://docs.llamaindex.ai/en/stable/use_cases/": {
+    "status": "",
+    "indexed_timestamp": "2024-05-04T03:08:39.579Z",
+    "content": "Skip to content\nLlamaIndex\nUse Cases\nInitializing search\nHome\nLearn\nUse Cases\nExamples\nComponent Guides\nAdvanced Topics\nAPI Reference\nOpen-Source Community\nLlamaCloud\nUse Cases\nPrompting\nQuestion-Answering (RAG)\nChatbots\nStructured Data Extraction\nAgents\nMulti-Modal Applications\nFine-Tuning\nUse Cases#\n\nSee the navigation on the left to explore the use-cases with LlamaIndex!\n\n Back to top\nPrevious\nA Guide to Extracting Terms and Definitions\nNext\nPrompting\n\n🦙\n\n⌘ + K",
+    "word_count": 66,
+    "filtered_content": "Question-Answering (RAG)\nChatbots\nStructured Data Extraction\nAgents\nMulti-Modal Applications\nFine-Tuning\nUse Cases#\nSee the navigation on the left to explore the use-cases with LlamaIndex!\nA Guide to Extracting Terms and Definitions",
+    "filtered_word_count": 31,
+    "combinedResults": [
+      {
+        "content": "undefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined\nundefined"
+      }
+    ],
+    "resultsWithLines": [
+      {
+        "result": "code",
+        "line": "Question-Answering (RAG)"
+      },
+      {
+        "result": "text",
+        "line": "Chatbots"
+      },
+      {
+        "result": "code",
+        "line": "Structured Data Extraction"
+      },
+      {
+        "result": "text",
+        "line": "Agents"
+      },
+      {
+        "result": "text",
+        "line": "Multi-Modal Applications"
+      },
+      {
+        "result": "text",
+        "line": "Fine-Tuning"
+      },
+      {
+        "result": "code",
+        "line": "Use Cases#"
+      },
+      {
+        "result": "text",
+        "line": "See the navigation on the left to explore the use-cases with LlamaIndex!"
+      },
+      {
+        "result": "text",
+        "line": "A Guide to Extracting Terms and Definitions"
+      }
+    ]
+  }
+}

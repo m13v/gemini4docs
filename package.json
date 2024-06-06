@@ -9,6 +9,7 @@
     "cli-highlight": "^2.1.11",
     "console-gui-tools": "^3.5.0",
     "dotenv": "^16.4.5",
+    "groq-sdk": "^0.3.3",
     "highlight.js": "^11.9.0",
     "inquirer": "^9.2.20",
     "jsdom": "^24.0.0",
@@ -16,6 +17,7 @@
     "marked-highlight": "^2.1.1",
     "marked-terminal": "^7.0.0",
     "node-fetch": "^3.3.2",
+    "punycode": "^2.3.1",
     "selenium-webdriver": "^4.20.0"
   },
   "type": "module",

@@ -18,8 +18,13 @@ const logBox = blessed.box({
   scrollable: true,
   alwaysScroll: true,
   scrollbar: {
-    ch: ' ',
-    inverse: true
+    ch: ' ',  // The character to use for the scrollbar.
+    track: {
+      bg: 'grey',  // Background color of the track
+    },
+    style: {
+      inverse: true  // Inverse the colors for the scrollbar
+    },
   },
   // mouse: true,  // Enable mouse support
   keys: true,  // Enable keyboard support for scrolling

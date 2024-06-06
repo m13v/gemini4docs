@@ -38,7 +38,7 @@ async function callIndexer(url) {
 }
 
 dotenv.config();
-const Geminiapikey = 'AIzaSyBGG6YF0vXN8H27ZIN7ibGJvM-ReaVURWY'; //temporary api key
+const Geminiapikey = 'AIzaSyClVG_noIBt3_1WD8kfTdyzqeNAGK8YEKI'; //temporary api key
 const genAI = new GoogleGenerativeAI(Geminiapikey);
 
 const workerUrl = 'https://worker-aged-night-839d.i-f9f.workers.dev';

@@ -9,3 +9,6 @@ Usage:
 $: g4d
 
 ![Demo](images/demo_quick.gif)
+
+Made by Matthew Diakonov
+https://m13v.com
