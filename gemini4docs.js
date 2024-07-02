@@ -44,7 +44,7 @@ const genAI = new GoogleGenerativeAI(Geminiapikey);
 const workerUrl = 'https://worker-aged-night-839d.i-f9f.workers.dev';
 
 async function performSearch(query) {
-    try {
+    try {   
         const response = await fetch(workerUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
